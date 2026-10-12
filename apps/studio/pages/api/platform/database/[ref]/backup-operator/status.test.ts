@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { handler } from './status'
 import { getBackupManagementAvailability } from '@/lib/api/self-platform/backup-management-availability'
-import { requestBackupOperator } from '@/lib/api/self-platform/backup-operator-client'
+import {
+  BackupOperatorAPIError,
+  requestBackupOperator,
+} from '@/lib/api/self-platform/backup-operator-client'
 import { getBackupOperatorStatus } from '@/lib/api/self-platform/backup-operator-status'
 import { guardProjectRoute } from '@/lib/api/self-platform/rbac/enforce'
 
@@ -19,7 +22,8 @@ vi.mock('@/lib/api/self-platform/backup-management-availability', async (importO
   >()),
   getBackupManagementAvailability: vi.fn(),
 }))
-vi.mock('@/lib/api/self-platform/backup-operator-client', () => ({
+vi.mock('@/lib/api/self-platform/backup-operator-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/api/self-platform/backup-operator-client')>()),
   requestBackupOperator: vi.fn(),
 }))
 vi.mock('@/lib/api/self-platform/backup-operator-status', async (importOriginal) => ({
@@ -52,8 +56,25 @@ beforeEach(() => {
     blockers: [],
     correlationId: '00000000-0000-4000-8000-000000000019',
   })
-  vi.mocked(requestBackupOperator).mockReset().mockResolvedValue({ ok: true })
+  vi.mocked(requestBackupOperator)
+    .mockReset()
+    .mockImplementation(async (_ref, path) => (path === '' ? cluster : policy))
 })
+
+const cluster = {
+  targetId: 'project-ref',
+  discovery: {
+    provider: 'single-primary-pgbackrest',
+    topology: 'static-primary',
+    primary: 'project-ref-db',
+    standbys: [],
+    repositoryType: 'pgbackrest',
+    repositoryLocation: 's3://fleet-backup-project-ref/pgbackrest',
+    blockers: [],
+    observedAt: '2026-10-12T06:00:00Z',
+  },
+}
+const policy = { enabled: true, retentionDays: 7, fullSchedule: '0 2 * * *', backupFrom: 'primary' }
 
 describe('GET /platform/database/[ref]/backup-operator/status', () => {
   it('rejects non-GET methods', async () => {
@@ -79,11 +100,51 @@ describe('GET /platform/database/[ref]/backup-operator/status', () => {
       expect.anything(),
       expect.objectContaining({ projectRef: 'project-ref', action: 'read:Read' })
     )
-    expect(getBackupOperatorStatus).toHaveBeenCalledWith('project-ref')
+    expect(getBackupOperatorStatus).not.toHaveBeenCalled()
     expect(response.statusCode).toBe(200)
     expect(response.body).toMatchObject({
       configured: true,
+      policy: { enabled: true, retentionDays: 7, schedule: '0 2 * * *' },
+      topology: { kind: 'static-primary', primary: 'project-ref-db' },
+      check: { status: 'healthy', checkedAt: '2026-10-12T06:00:00Z' },
+      capabilities: { backup: true, restore: true },
       management: { state: 'available', correlationId: expect.any(String) },
+    })
+  })
+
+  it('reports a project without backups as available but not configured', async () => {
+    vi.mocked(requestBackupOperator).mockRejectedValue(
+      new BackupOperatorAPIError('not_found', 'cluster not found', 404)
+    )
+    const response = makeResponse()
+    await handler(
+      { method: 'GET', query: { ref: 'project-ref' } } as unknown as NextApiRequest,
+      response,
+      {} as never
+    )
+
+    expect(response.body).toMatchObject({ configured: false, management: { state: 'available' } })
+  })
+
+  it('reports a registered cluster without a recent observation as degraded', async () => {
+    vi.mocked(requestBackupOperator).mockImplementation(async (_ref, path) => {
+      if (path === '') {
+        throw new BackupOperatorAPIError('cluster_discovery_failed', 'no recent observation', 409)
+      }
+      return policy
+    })
+    const response = makeResponse()
+    await handler(
+      { method: 'GET', query: { ref: 'project-ref' } } as unknown as NextApiRequest,
+      response,
+      {} as never
+    )
+
+    expect(response.body).toMatchObject({
+      configured: true,
+      check: { status: 'degraded', message: 'no recent observation' },
+      capabilities: { restore: false },
+      management: { state: 'available' },
     })
   })
 
@@ -157,7 +218,9 @@ describe('GET /platform/database/[ref]/backup-operator/status', () => {
       '',
       expect.objectContaining({ correlationId: '00000000-0000-4000-8000-000000000021' })
     )
-    expect(getBackupOperatorStatus).toHaveBeenCalledWith('project-ref')
-    expect(response.body).toMatchObject({ management: { state: 'available', blockers: [] } })
+    expect(response.body).toMatchObject({
+      configured: true,
+      management: { state: 'available', blockers: [] },
+    })
   })
 })

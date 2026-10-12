@@ -169,3 +169,35 @@ func authorizedRequest(method, target string, body io.Reader) *http.Request {
 	claims := security.ServiceClaims{Subject: "test", Scopes: []string{"*"}, Projects: []string{"*"}}
 	return r.WithContext(withServiceClaims(r.Context(), claims))
 }
+
+func TestBackupsAPIReportsReasonsOfAUsableWindowAsNotes(t *testing.T) {
+	store, err := controlstore.OpenSQLite(context.Background(), filepath.Join(t.TempDir(), "control.db"), contracts.RecoveryDomain{SystemIdentifier: "control", DataDomain: "operator-state"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+	if err := store.RegisterCluster(context.Background(), controlstore.TargetRecord{ProjectID: "project", TargetID: "cluster-1", SystemIdentifier: "42", DataDomain: "database"}); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 12, 6, 42, 0, 0, time.UTC)
+	handler, err := NewHandlerWithSources(store, nil, staticRecoverability{
+		window: recoverability.Window{From: now, Until: now, Confidence: recoverability.Inferred, Reasons: []string{"restore drill target is outside the inferred window"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mux := http.NewServeMux()
+	handler.Register(mux)
+	response := httptest.NewRecorder()
+	mux.ServeHTTP(response, authorizedRequest(http.MethodGet, "/v1/clusters/cluster-1/backups", nil))
+	var payload struct {
+		Blockers []string `json:"blockers"`
+		Notes    []string `json:"notes"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
+		t.Fatal(err)
+	}
+	if len(payload.Blockers) != 0 || len(payload.Notes) != 1 {
+		t.Fatalf("a drill that predates the newest backup blocked PITR: %s", response.Body.String())
+	}
+}

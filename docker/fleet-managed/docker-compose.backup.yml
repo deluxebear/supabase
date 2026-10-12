@@ -30,6 +30,17 @@ services:
       - managed-db-socket:/var/run/postgresql
       # archive-push reads the same configuration as the Agent.
       - backup-config:/etc/pgbackrest:ro
+    # Settings here live outside PGDATA, so a restore keeps them. Without a
+    # timeout an idle database never completes a WAL segment, and the
+    # recovery window stops advancing; 120 seconds matches the Supabase image.
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=fatal
+      - -c
+      - archive_timeout=120s
 
   # Copies the project's pgBackRest configuration and repository CA into a
   # volume owned by the postgres user (UID 100), which `db` and the Agent read.

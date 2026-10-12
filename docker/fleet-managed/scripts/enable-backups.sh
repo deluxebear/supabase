@@ -202,10 +202,10 @@ step "Creating stanza $stanza"
 pgbackrest stanza-create
 
 step "Turning on WAL archiving"
-# Without a timeout an idle database never completes a WAL segment, so the
-# recovery window would stop advancing. 120 seconds matches the Supabase image.
+# archive_timeout comes from the overlay's `db` command, so a restore cannot
+# drop it. Remove the value earlier versions of this script set.
 compose exec -T db psql -U supabase_admin -h /var/run/postgresql -d postgres -v ON_ERROR_STOP=1 -Atc \
-  "ALTER SYSTEM SET archive_timeout = '120s'" -c "SELECT pg_reload_conf()" >/dev/null
+  "ALTER SYSTEM RESET archive_timeout" -c "SELECT pg_reload_conf()" >/dev/null
 current="$(compose exec -T db psql -U supabase_admin -h /var/run/postgresql -d postgres -Atc \
   "select current_setting('archive_mode') || '|' || current_setting('archive_command')")"
 if [ "$current" = "on|$archive_command" ]; then

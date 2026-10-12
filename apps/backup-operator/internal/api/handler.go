@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/controlstore"
+	"github.com/supabase/supabase/apps/backup-operator/internal/drill"
 	"github.com/supabase/supabase/apps/backup-operator/internal/observability"
 	"github.com/supabase/supabase/apps/backup-operator/internal/recoverability"
 	"github.com/supabase/supabase/apps/backup-operator/internal/restoreauth"
@@ -637,11 +638,16 @@ func (h *Handler) listBackups(w http.ResponseWriter, r *http.Request) {
 	if drill != nil {
 		drillResponse = map[string]any{"id": drill.ID, "targetTime": drill.TargetTime.UTC().Format(time.RFC3339), "completedAt": drill.CompletedAt.UTC().Format(time.RFC3339), "passed": drill.Passed, "evidenceDigest": nullable(drill.EvidenceDigest)}
 	}
-	blockers := window.Reasons
-	if blockers == nil {
-		blockers = []string{}
+	// Reasons block PITR only when no window could be established. With a
+	// window they explain its confidence, for example a drill that predates the
+	// newest backup and so does not verify it.
+	blockers, notes := []string{}, []string{}
+	if window.Confidence == recoverability.Unknown {
+		blockers = append(blockers, window.Reasons...)
+	} else {
+		notes = append(notes, window.Reasons...)
 	}
-	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "isStale": isStale, "blockers": blockers, "drill": drillResponse})
+	writeJSON(w, 200, map[string]any{"backups": backups, "recoveryWindow": map[string]any{"earliest": earliest, "latest": latest}, "confidence": window.Confidence, "isStale": isStale, "blockers": blockers, "notes": notes, "drill": drillResponse})
 }
 func (h *Handler) getClusterJob(w http.ResponseWriter, r *http.Request) {
 	target, ok := h.authorizedTarget(w, r, "backup.read")
@@ -748,7 +754,7 @@ func (h *Handler) createRestorePlan(w http.ResponseWriter, r *http.Request) {
 		writeError(w, 409, "restore_plan_persist_failed", err.Error())
 		return
 	}
-	writeJSON(w, 201, map[string]any{"id": plan.ID, "hash": plan.Hash, "expiresAt": plan.ExpiresAt, "recoveryTarget": plan.SafetyInputs.RestoreTarget, "impact": map[string]any{"serviceInterruption": "destructive restore requires a write fence", "affectedNodes": []string{}, "requiredBytes": plan.Impact.Capacity.RequiredBytes}, "blockers": []string{}})
+	writeJSON(w, 201, map[string]any{"id": plan.ID, "hash": plan.Hash, "expiresAt": plan.ExpiresAt, "recoveryTarget": plan.SafetyInputs.RestoreTarget, "impact": map[string]any{"serviceInterruption": "destructive restore requires a write fence", "affectedNodes": []string{plan.SafetyInputs.TargetNodeID}, "requiredBytes": plan.Impact.Capacity.RequiredBytes}, "blockers": []string{}})
 }
 
 func (h *Handler) getRestorePlan(w http.ResponseWriter, r *http.Request) {
@@ -769,7 +775,7 @@ func (h *Handler) getRestorePlan(w http.ResponseWriter, r *http.Request) {
 	if !authorizeRequest(w, r, inputs.Target.ProjectID, "backup.read") {
 		return
 	}
-	writeJSON(w, 200, map[string]any{"id": plan.ID, "hash": plan.PlanHash, "expiresAt": plan.ExpiresAt, "recoveryTarget": inputs.RestoreTarget, "impact": map[string]any{"serviceInterruption": "destructive restore requires a write fence", "affectedNodes": []string{}, "requiredBytes": inputs.Capacity.RequiredBytes}, "blockers": []string{}})
+	writeJSON(w, 200, map[string]any{"id": plan.ID, "hash": plan.PlanHash, "expiresAt": plan.ExpiresAt, "recoveryTarget": inputs.RestoreTarget, "impact": map[string]any{"serviceInterruption": "destructive restore requires a write fence", "affectedNodes": []string{inputs.TargetNodeID}, "requiredBytes": inputs.Capacity.RequiredBytes}, "blockers": []string{}})
 }
 
 type restoreAuthorizationRequest struct {
@@ -952,6 +958,23 @@ func (h *Handler) runMaintenance(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	payload, _ := json.Marshal(map[string]string{"kind": request.Kind})
+	if request.Kind == "restore-drill" {
+		// A drill target is derived from the same server observations as a
+		// restore plan, exactly as scheduled drills do; the request names none.
+		drillTarget, err := h.onDemandDrillTarget(r.Context(), target.TargetID)
+		if err != nil {
+			writeError(w, 409, "restore_drill_unavailable", err.Error())
+			return
+		}
+		if drillTarget.ProjectID != target.ProjectID || drillTarget.NodeID != targetNodeID {
+			writeError(w, 409, "restore_drill_unavailable", "observed drill routing does not match the cluster")
+			return
+		}
+		payload, _ = json.Marshal(struct {
+			Kind   string       `json:"kind"`
+			Target drill.Target `json:"target"`
+		}{Kind: "restore-drill", Target: drillTarget})
+	}
 	job, created, err := h.store.CreateJob(r.Context(), controlstore.CreateJobInput{ID: newID(), ProjectID: target.ProjectID, TargetID: target.TargetID, Type: "maintenance", IdempotencyKey: idempotencyKey, PlanHash: "maintenance/" + request.Kind, StepName: "execute", Capability: capability, TargetNodeID: targetNodeID, Payload: payload})
 	if err != nil {
 		writeError(w, 409, "maintenance_failed", err.Error())
@@ -962,6 +985,31 @@ func (h *Handler) runMaintenance(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusAccepted
 	}
 	writeJSON(w, status, jobResponse(job))
+}
+
+// onDemandDrillLag places an on-demand drill target far enough back that its
+// WAL has been archived.
+const onDemandDrillLag = 5 * time.Minute
+
+type noDrillResults struct{}
+
+func (noDrillResults) Save(context.Context, drill.Result) error { return nil }
+func (noDrillResults) Latest(context.Context, string) (drill.Result, error) {
+	return drill.Result{}, drill.ErrNotFound
+}
+
+func (h *Handler) onDemandDrillTarget(ctx context.Context, clusterID string) (drill.Target, error) {
+	if h.observations == nil {
+		return drill.Target{}, errors.New("server restore observation source is not configured")
+	}
+	targets, err := (drill.ServerObservationTargets{Source: h.observations, Results: noDrillResults{}, ClusterIDs: []string{clusterID}, TargetLag: onDemandDrillLag, MinInterval: time.Nanosecond}).DueTargets(ctx, time.Now().UTC())
+	if err != nil {
+		return drill.Target{}, err
+	}
+	if len(targets) != 1 {
+		return drill.Target{}, errors.New("no drill target is available")
+	}
+	return targets[0], nil
 }
 
 func (h *Handler) exportAudits(w http.ResponseWriter, r *http.Request) {

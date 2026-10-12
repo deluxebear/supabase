@@ -7,7 +7,11 @@ import {
   getBackupManagementAvailability,
   type BackupManagementAvailability,
 } from '@/lib/api/self-platform/backup-management-availability'
-import { requestBackupOperator } from '@/lib/api/self-platform/backup-operator-client'
+import {
+  BackupOperatorAPIError,
+  requestBackupOperator,
+} from '@/lib/api/self-platform/backup-operator-client'
+import { fleetBackupOperatorStatus } from '@/lib/api/self-platform/backup-operator-fleet-status'
 import {
   getBackupOperatorStatus,
   unavailableBackupOperatorStatus,
@@ -40,24 +44,43 @@ export async function handler(req: NextApiRequest, res: NextApiResponse, claims?
 
   let management = await getBackupManagementAvailability(projectRef)
   res.setHeader('X-Correlation-ID', management.correlationId)
-
-  if (management.state === 'checking' || management.state === 'available') {
-    try {
-      await requestBackupOperator(projectRef, '', {
-        method: 'GET',
-        actor: claims?.sub ?? 'studio-api',
-        correlationId: management.correlationId,
-      })
-      management = { ...management, state: 'available', blockers: [] }
-    } catch (error) {
-      management = operatorFailureAvailability(management, error)
-    }
-  }
-
-  if (management.state !== 'available') {
+  if (management.state !== 'checking' && management.state !== 'available') {
     return res.status(200).json({ ...unavailableBackupOperatorStatus, management })
   }
-  return res.status(200).json({ ...(await getBackupOperatorStatus(projectRef)), management })
+
+  const request = { actor: claims?.sub ?? 'studio-api', correlationId: management.correlationId }
+  let cluster: unknown = null
+  let discoveryError: string | undefined
+  try {
+    cluster = await requestBackupOperator(projectRef, '', { method: 'GET', ...request })
+  } catch (error) {
+    if (operatorErrorStatus(error) === 404) {
+      // The Operator answered, but backups are not enabled for this project.
+      management = { ...management, state: 'available', blockers: [] }
+      return res.status(200).json({ ...unavailableBackupOperatorStatus, management })
+    }
+    if (operatorErrorStatus(error) !== 409) {
+      management = operatorFailureAvailability(management, error)
+      return res.status(200).json({ ...unavailableBackupOperatorStatus, management })
+    }
+    // The cluster is registered, but the Agent has no recent observation.
+    discoveryError = error instanceof Error ? error.message : undefined
+  }
+  management = { ...management, state: 'available', blockers: [] }
+  const policy = await requestBackupOperator(projectRef, '/backup-policy', {
+    method: 'GET',
+    ...request,
+  }).catch((error) => {
+    if (operatorErrorStatus(error) === 404) return null
+    throw error
+  })
+  return res
+    .status(200)
+    .json({ ...fleetBackupOperatorStatus(cluster, policy, discoveryError), management })
+}
+
+function operatorErrorStatus(error: unknown) {
+  return error instanceof BackupOperatorAPIError ? error.status : undefined
 }
 
 function operatorFailureAvailability(

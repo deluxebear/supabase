@@ -2,7 +2,7 @@
 
 - Date: 2026-10-12
 - Branch: `custom/main`
-- Status: approved 2026-10-12 (option B). Stages 3.1 to 3.4 are done; see section 9.
+- Status: approved 2026-10-12 (option B). Done: stages 3.1 to 3.5 passed on 2026-10-12; see section 9 and the [evidence](./qa-evidence/2026-10-12-phase3-compose-backups/README.md).
 - Inputs: Phase 3 of the [completion roadmap](./2026-09-28-fleet-completion-roadmap.md), the [Go Backup Operator architecture](./2026-07-12-go-backup-operator-architecture.md), `apps/backup-operator/docs/production-runbook.md`, and a code audit of `apps/backup-operator` and `docker/fleet-managed` on 2026-10-12.
 
 ## 1. Goal
@@ -189,17 +189,16 @@ Total: about 4.5–5.5 weeks, above the roadmap's 3–4 weeks because of option 
 
 ## 8. Verification
 
-A new `docker/self-platform/scripts/verify-compose-backups.sh` runs against a disposable two-stack environment with RustFS:
+`docker/self-platform/scripts/verify-compose-backups.sh <ref> -- <stack Compose arguments>` runs against a stack that already ran `enable-backups.sh`:
 
-1. Enable backups for project-a.
-2. Write fixture rows and run a scheduled full backup.
-3. Enable PITR and record a target time.
-4. Write more rows and run the isolated drill.
-5. Restore to the target time.
-6. Verify the rows from before the target time are present and the later ones are absent.
-7. Roll back within the window and verify the later rows return.
+1. Check that discovery and PITR status come from the Agent.
+2. Take a full backup and write fixture rows before and after a target time.
+3. Run an on-demand isolated restore drill and require `drill-verified`.
+4. Restore to the target time; require only the earlier row and the services running again.
+5. Roll back; require both rows and the services.
+6. Require the backup proxy to refuse another project's container and a service outside the fence, and the drill credentials to fail writing to the bucket.
 
-It also checks that project-b's Agent cannot receive project-a tasks and that the backup proxy rejects other containers. Evidence goes to `docs/self-hosted-parity/qa-evidence/`.
+It drops the fixture table at the end. It runs against an existing stack rather than a disposable two-stack environment; Agent-to-cluster isolation between projects is covered by the enrollment and dispatch unit tests. Evidence goes to `docs/self-hosted-parity/qa-evidence/`.
 
 ## 9. Progress
 
@@ -256,3 +255,21 @@ Notes:
 
 - A restored PGDATA carries the `ALTER SYSTEM` settings of its backup. `archive_timeout` was set after the backup used here, so it is missing after a restore until `enable-backups.sh` runs again. Settings the stack needs should be applied after a restore, not only at enable time; this belongs with the Studio acceptance in stage 3.5.
 - Validator logs (`<workspace>.log`, `<workspace>.postgres.log`) stay in the workspace root after each drill for diagnosis.
+
+### Stage 3.5 (done 2026-10-12)
+
+`verify-compose-backups.sh project-d` passed on its first run, and Studio showed the backups, policy, drill, and recovery window for `project-d` and started a backup and a restore plan. Evidence: [qa-evidence/2026-10-12-phase3-compose-backups](./qa-evidence/2026-10-12-phase3-compose-backups/README.md).
+
+Defects found and fixed:
+
+- In the Fleet profile Studio read the backup status from a row the old co-located Operator published in the project database, so the page said backups were not configured. Studio now builds the status from the Operator's cluster discovery and backup policy; a project without backups shows as not configured, and a cluster without a recent observation as degraded.
+- On-demand drills (`POST .../maintenance` with `restore-drill`) sent no target, so the Agent refused them. The Operator now derives the target from the same observations as scheduled drills.
+- The backups API reported every reason as a blocker, so a drill that predated the newest backup made Studio show PITR as blocked although the window was usable. Reasons block only when no window exists; otherwise they are returned as `notes`.
+- A restore plan listed no affected nodes; it now names the target node.
+- `archive_timeout` moved from `ALTER SYSTEM` to the overlay's `db` command, so a restore cannot drop it.
+
+Known limits:
+
+- Recovery confidence follows the newest backup, so each new full backup returns it to `inferred` until the next drill (daily by default).
+- `enable-backups.sh` assumes the stack and the control plane share a host (open question 7).
+- The Operator's destructive lease is shorter than the rollback window (open question 9); the Agent guards the gap.
