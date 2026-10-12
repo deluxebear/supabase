@@ -81,6 +81,7 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) error {
 	for _, task := range tasks {
 		if err := d.Sender.Send(ctx, task); err != nil {
 			observability.CoreMetrics{Registry: d.Metrics}.Outbox("send", "failed", len(tasks))
+			slog.Warn("task was not delivered; it stays queued", "task", task.TaskID, "capability", task.Capability, "node", task.NodeID, "error", err)
 			if releaseErr := d.Store.ReleaseOutbox(ctx, task.TaskID, d.OwnerID); releaseErr != nil {
 				return fmt.Errorf("send task %s: %v; release claim: %w", task.TaskID, err, releaseErr)
 			}

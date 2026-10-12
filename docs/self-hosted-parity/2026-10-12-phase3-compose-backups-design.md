@@ -2,7 +2,7 @@
 
 - Date: 2026-10-12
 - Branch: `custom/main`
-- Status: approved 2026-10-12 (option B). Stage 3.1 is done; see section 9.
+- Status: approved 2026-10-12 (option B). Stages 3.1 and 3.2 are done; see section 9.
 - Inputs: Phase 3 of the [completion roadmap](./2026-09-28-fleet-completion-roadmap.md), the [Go Backup Operator architecture](./2026-07-12-go-backup-operator-architecture.md), `apps/backup-operator/docs/production-runbook.md`, and a code audit of `apps/backup-operator` and `docker/fleet-managed` on 2026-10-12.
 
 ## 1. Goal
@@ -110,12 +110,11 @@ Rollback before backups are enabled: run the same service with `MIGRATE_DIRECTIO
 
 ### 4.6 Operator changes
 
-1. **Agent listener.** Configure `BACKUP_OPERATOR_AGENT_GRPC_LISTEN`, a server certificate, and a client CA in the control-plane Compose file, and attach the Operator to the management network so Agents can reach it.
-2. **Multi-Agent enrollment.** Accept an enrollment directory (`BACKUP_OPERATOR_AGENT_ENROLLMENT_DIR`) with one 0600 file per Agent, in addition to the existing single file.
-3. **Cluster registry.** Replace the process flags for single-primary with registrations created from the enrollment files: project, target, node, stanza, repository ID, and PGDATA destination per cluster.
-4. **Observation task.** A new capability, `single-primary-pgbackrest.observe`, runs on the Agent and returns typed evidence: the PostgreSQL system identifier and timeline, `pgbackrest info --output=json`, the WAL inventory derived from the repository, and the free bytes on the PGDATA filesystem. The Operator schedules it per cluster, stores the latest result, and builds discovery, PITR status, restore observations, and recoverability from it. Stale or missing evidence blocks restore planning, as unknown evidence does today.
-5. **Quarantine cleanup.** Today the Operator deletes expired quarantine data on its own filesystem. It becomes an Agent task on the owning cluster.
-6. **Docker restore drill.** Implement `RestoreDrill` for the Docker runtime by reusing the systemd drill runner: restore into the drill workspace and run the validation harness inside the Agent container.
+1. **Agent listener.** The control-plane Compose file configures `BACKUP_OPERATOR_AGENT_GRPC_LISTEN` on port 9443 with a server certificate and client CA from a separate backup Agent CA (`docker/self-platform/scripts/generate-backup-agent-trust.sh`), so a Fleet Agent certificate cannot authenticate. The Operator joins the management network with the alias `backup-operator`.
+2. **Cluster registrations.** `BACKUP_OPERATOR_CLUSTER_DIR` holds one 0600 JSON file per cluster with its project, target, node, Agent ID, certificate fingerprint, system identifier, data domain, stanza, pgBackRest paths, and repository identity. At startup the Operator enrolls each Agent, registers the repository and the cluster, and routes backups, PITR, maintenance, and restores for it. Duplicate targets, nodes, Agents, or stanzas are refused. A new registration takes effect when the Operator is recreated, which `enable-backups.sh` does. A copy step (`backup-operator-config-init`) delivers the files and the server certificate to the Operator user; the CA key stays on the host.
+3. **Observation task.** `single-primary-pgbackrest.maintenance.observe` runs on the Agent and returns typed evidence: the system identifier, timeline, recovery state, archive settings and archiver health, `pgbackrest info` JSON, the WAL segments listed with `pgbackrest repo-ls`, and the free bytes next to PGDATA. A coordinator requests it every 5 minutes per cluster (skipping clusters with one already queued) and prunes finished observation jobs after 24 hours, keeping the newest. Discovery, PITR status, and recoverability use evidence up to 15 minutes old. Restore planning needs evidence under 2 minutes old and requests a new observation, waiting up to 30 seconds. Recoverability also requests one when the newest backup finished after the latest observation. Freshness is measured from when the Operator received the evidence, not the Agent's clock.
+4. **Quarantine cleanup** (stage 3.3). Today the Operator deletes expired quarantine data on its own filesystem. It becomes an Agent task on the owning cluster, together with in-place restore, which is what creates quarantines.
+5. **Docker restore drill.** Implement `RestoreDrill` for the Docker runtime by reusing the systemd drill runner: restore into the drill workspace and run the validation harness inside the Agent container.
 
 ### 4.7 Drill workspace
 
@@ -136,11 +135,12 @@ The device check is not weakened.
 4. The stanza.
 5. WAL archiving.
 6. A check and a first full backup.
-7. An Agent client certificate, the enrollment file, and registration of the cluster (`POST /v1/clusters`), added in stage 3.2.
+7. An Agent client certificate from the backup Agent CA, and the cluster registration file. The Operator is recreated to load it.
+8. The validation container (created, not started), the backup Docker proxy, and the Agent.
 
-Every step is idempotent.
+Every step is idempotent. Because it signs the certificate and recreates the Operator, the script runs on the control-plane host; remote stacks need the certificate and registration delivered another way (open question 7).
 
-After that, the `backup-operator` domain answers for the project and Studio shows it as available. `init-instance-env.sh` generates the variables for new stacks.
+After that, the `backup-operator` domain answers for the project and Studio shows it as available.
 
 ### 4.9 Studio
 
@@ -158,13 +158,13 @@ Studio already routes, authorizes, and renders backups in the Fleet profile, so 
 
 Each stage ends with unit tests and a live check on the local environment.
 
-| Stage | Work                                                                                                        | Done when                                                                                                                                    | Size        |
-| ----- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| 3.1   | Agent image, backup overlay, RustFS, layout migration, `enable-backups.sh` steps 1–3                        | `project-d` runs on the new layout, and `pgbackrest stanza-create`, `check`, and a full backup succeed from the Agent container              | 1 week      |
-| 3.2   | Operator: Agent listener, enrollment directory, cluster registry, observation task, quarantine cleanup task | A scheduled full backup and PITR enable run through the Operator for `project-d`; discovery and the recovery window come from Agent evidence | 1.5–2 weeks |
-| 3.3   | Backup proxy policy, fence helper, in-place PITR restore through the Operator                               | A PITR restore of `project-d` to a timestamp succeeds with the fence engaged and released, and rollback works within the window              | 1 week      |
-| 3.4   | Docker restore drill with a `tmpfs` workspace                                                               | A drill succeeds and confidence becomes `drill-verified`                                                                                     | 0.5–1 week  |
-| 3.5   | Studio live acceptance, E2E script, evidence                                                                | The done criteria in section 1 are met                                                                                                       | 0.5 week    |
+| Stage | Work                                                                                                       | Done when                                                                                                                                    | Size        |
+| ----- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| 3.1   | Agent image, backup overlay, RustFS, layout migration, `enable-backups.sh` steps 1–3                       | `project-d` runs on the new layout, and `pgbackrest stanza-create`, `check`, and a full backup succeed from the Agent container              | 1 week      |
+| 3.2   | Operator: Agent listener, cluster registrations, observation task                                          | A scheduled full backup and PITR enable run through the Operator for `project-d`; discovery and the recovery window come from Agent evidence | 1.5–2 weeks |
+| 3.3   | Compose write fence, quarantine cleanup task, timeline history, in-place PITR restore through the Operator | A PITR restore of `project-d` to a timestamp succeeds with the fence engaged and released, and rollback works within the window              | 1 week      |
+| 3.4   | Docker restore drill with a `tmpfs` workspace                                                              | A drill succeeds and confidence becomes `drill-verified`                                                                                     | 0.5–1 week  |
+| 3.5   | Studio live acceptance, E2E script, evidence                                                               | The done criteria in section 1 are met                                                                                                       | 0.5 week    |
 
 Total: about 4.5–5.5 weeks, above the roadmap's 3–4 weeks because of option B.
 
@@ -176,6 +176,8 @@ Total: about 4.5–5.5 weeks, above the roadmap's 3–4 weeks because of option 
 4. **Layout migration downtime.** Proportional to file count, not data size (a rename within one filesystem), but the stack is down while it runs.
 5. **pgsodium and Vault keys.** A restored database needs the same root key. The project's key lives outside PGDATA (`db-config` volume), so an in-place restore keeps it. A restore to a new stack must copy it; this is out of scope for Phase 3 and documented as a limitation.
 6. **Capacity.** In-place restore keeps the quarantined PGDATA until the rollback window ends, so the volume needs room for two copies. The Operator's capacity check already enforces this using the Agent-reported free bytes.
+7. **Remote stacks.** `enable-backups.sh` assumes the stack and the control plane share a host. A stack on another host needs the Agent certificate, the registration file, and the Operator restart split into a control-plane step.
+8. **Timeline history.** Observations list timeline history files but do not read them yet, so the recovery window after a timeline switch (a restore) stays unknown instead of being guessed. Reading them with `pgbackrest repo-get` belongs to stage 3.3.
 
 ## 8. Verification
 
@@ -203,3 +205,23 @@ Findings that changed the design:
 - pgBackRest needs HTTPS for S3, so the repository serves TLS from the management CA.
 - Backups need WAL archiving, so it is turned on when backups are enabled rather than only for PITR.
 - The configuration is copied into a volume owned by UID 100 instead of bind-mounted.
+
+### Stage 3.2 (done 2026-10-12)
+
+The Operator on the control plane now serves `project-d` from its Agent's observations. On the local environment:
+
+- The Agent connected over mTLS, and the first observation arrived within seconds of the Operator starting.
+- `GET /v1/clusters/project-d` reported the topology, primary, and repository from the observation, with no blockers. `GET .../pitr` reported archiving enabled and healthy.
+- `POST .../pitr/enable` ran through the Agent: it restarted `db` through the backup proxy, checked the stanza, switched WAL, and took a full backup.
+- A scheduled full backup ran from the policy, recorded its manifest, and the recovery window became `inferred` once the next observation listed its WAL.
+
+Work pulled forward from stage 3.3, because the Docker runtime needs it to start and PITR enable restarts `db`: the `backup` proxy policy and `fleet-docker-proxy-backup` service, the `db-validation` container, and a write fence helper that refuses to block. Restores therefore stop before they change anything until stage 3.3 replaces the helper.
+
+Defects found and fixed during the live run:
+
+- The Operator's runtime workers start only when a local observer is configured, so tasks for registered clusters were never dispatched. Registered clusters now provide one.
+- Docker reports a restarted container as running before PostgreSQL accepts connections, so PITR enable failed at `stanza-create`. The Docker runtime now waits for the database after a restart.
+- Enabling PITR and saving a policy in Studio wrote two policies with different IDs, and the scheduler ran both. Both now write the cluster's existing policy.
+- Studio marked the shared `backup-operator` domain unavailable for every project when one project got an application error, such as a 404 for a cluster without backups. Only network errors, 401, 403, and 5xx responses do now.
+- An idle database never completed a WAL segment, so the recovery window stopped at the last backup. `enable-backups.sh` sets `archive_timeout` to 120 seconds.
+- The Agent's reconnect loop and the outbox dispatcher dropped errors silently; both log them now.

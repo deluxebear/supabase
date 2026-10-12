@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { executePlatformQuery } from './db'
 import {
   createManagementTarget,
+  domainStateAfterError,
   enrollmentTokenAuditQuery,
   managementBindingInputSchema,
   managementTargetInputSchema,
+  ManagementTrustDownstreamError,
   mintManagementServiceAssertion,
 } from './management-trust'
 
@@ -54,6 +56,17 @@ describe('management trust platform boundary', () => {
         allowedCapabilityPrefixes: ['management.'],
       }).success
     ).toBe(false)
+  })
+
+  it('marks a shared domain unavailable only for failures of the domain itself', () => {
+    const downstream = (status: number) =>
+      new ManagementTrustDownstreamError('error', 'Downstream error', status)
+    expect(domainStateAfterError(new Error('connect ECONNREFUSED'))).toBe('unavailable')
+    expect(domainStateAfterError(downstream(503))).toBe('unavailable')
+    expect(domainStateAfterError(downstream(401))).toBe('unavailable')
+    expect(domainStateAfterError(downstream(426))).toBe('incompatible')
+    expect(domainStateAfterError(downstream(404))).toBe('available')
+    expect(domainStateAfterError(downstream(409))).toBe('available')
   })
 
   it('types enrollment audit parameters that PostgreSQL cannot infer from JSON builders', () => {

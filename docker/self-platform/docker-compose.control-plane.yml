@@ -161,6 +161,33 @@ services:
     security_opt: [no-new-privileges:true]
     networks: [control]
 
+  # Copies the backup Agent trust material and cluster registrations into a
+  # volume the Operator user (UID 65532) can read. It runs on every `up`, so a
+  # new registration from enable-backups.sh takes effect when the Operator is
+  # recreated. The CA key stays on the host.
+  backup-operator-config-init:
+    image: alpine:3.22
+    restart: "no"
+    network_mode: none
+    command:
+      - /bin/sh
+      - -ceu
+      - |
+        rm -rf /config/tls /config/clusters
+        install -d -o 65532 -g 65532 -m 0700 /config/tls /config/clusters
+        if [ -f /source/tls/server.key ]; then
+          install -o 65532 -g 65532 -m 0644 /source/tls/ca.crt /config/tls/ca.crt
+          install -o 65532 -g 65532 -m 0644 /source/tls/server.crt /config/tls/server.crt
+          install -o 65532 -g 65532 -m 0600 /source/tls/server.key /config/tls/server.key
+        fi
+        for file in /source/clusters/*.json; do
+          [ -f "$$file" ] || continue
+          install -o 65532 -g 65532 -m 0600 "$$file" "/config/clusters/$${file##*/}"
+        done
+    volumes:
+      - ./secrets/backup-operator:/source:ro
+      - backup-operator-config:/config
+
   backup-operator:
     image: ${BACKUP_OPERATOR_IMAGE:?set BACKUP_OPERATOR_IMAGE}
     command: [--mode=operator, --listen=0.0.0.0:8080]
@@ -169,6 +196,8 @@ services:
     user: "65532:65532"
     depends_on:
       control-db-init:
+        condition: service_completed_successfully
+      backup-operator-config-init:
         condition: service_completed_successfully
     environment:
       # One management-target signing key is shared by its registered domain
@@ -182,10 +211,22 @@ services:
       BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN: ${BACKUP_OPERATOR_CONTROL_STORE_DATA_DOMAIN:-platform-db-data}
       BACKUP_OPERATOR_RUNTIME_ENABLED: "true"
       BACKUP_OPERATOR_RUNTIME_MAX_CONCURRENT_OPERATIONS: ${BACKUP_OPERATOR_RUNTIME_MAX_CONCURRENT_OPERATIONS:-4}
+      # Backup Agents on managed stacks connect here over mTLS
+      # (scripts/generate-backup-agent-trust.sh, fleet-managed/scripts/enable-backups.sh).
+      BACKUP_OPERATOR_AGENT_GRPC_LISTEN: 0.0.0.0:9443
+      BACKUP_OPERATOR_AGENT_GRPC_CERT: /run/backup-operator/tls/server.crt
+      BACKUP_OPERATOR_AGENT_GRPC_KEY: /run/backup-operator/tls/server.key
+      BACKUP_OPERATOR_AGENT_GRPC_CLIENT_CA: /run/backup-operator/tls/ca.crt
+      BACKUP_OPERATOR_CLUSTER_DIR: /run/backup-operator/clusters
+    volumes:
+      - backup-operator-config:/run/backup-operator:ro
     ports:
       - 127.0.0.1:${BACKUP_OPERATOR_HTTP_PORT:-8080}:8080
     security_opt: [no-new-privileges:true]
-    networks: [control]
+    networks:
+      control: {}
+      management:
+        aliases: [backup-operator]
 
   backup-operator-tls:
     image: nginxinc/nginx-unprivileged:1.27-alpine
@@ -372,6 +413,7 @@ volumes:
   fleet-artifacts:
   control-snippets:
   backup-repository-data:
+  backup-operator-config:
 
 secrets:
   fleet_agent_ca_cert:

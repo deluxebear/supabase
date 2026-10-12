@@ -141,6 +141,9 @@ func main() {
 	drillTargetLag := flag.Duration("restore-drill-target-lag", envDuration("BACKUP_OPERATOR_RESTORE_DRILL_TARGET_LAG", 15*time.Minute), "PITR target lag for restore drills")
 	drillLeaseTTL := flag.Duration("restore-drill-lease-ttl", envDuration("BACKUP_OPERATOR_RESTORE_DRILL_LEASE_TTL", 30*time.Minute), "exclusive restore drill execution lease")
 	agentEnrollmentFile := flag.String("agent-enrollment-file", os.Getenv("BACKUP_OPERATOR_AGENT_ENROLLMENT_FILE"), "0600 Agent enrollment bootstrap JSON")
+	clusterDir := flag.String("cluster-dir", os.Getenv("BACKUP_OPERATOR_CLUSTER_DIR"), "directory of 0600 cluster registrations for Agent-observed single-primary clusters")
+	observeInterval := flag.Duration("observe-interval", envDuration("BACKUP_OPERATOR_OBSERVE_INTERVAL", 5*time.Minute), "how often Agents report cluster observations")
+	observeRetention := flag.Duration("observe-retention", envDuration("BACKUP_OPERATOR_OBSERVE_RETENTION", 24*time.Hour), "how long finished observation jobs are kept")
 	agentModeConfig := registerAgentModeFlags()
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
@@ -235,6 +238,48 @@ func main() {
 		// cycle only needs to preserve cancellation semantics.
 		providers.Projection = func(ctx context.Context) error { return ctx.Err() }
 		providers.Cleanup = singlePrimaryCleanup(localCfg.CapacityPath)
+	}
+	var registry *observedClusters
+	coordinator := &opruntime.ObservationCoordinator{Interval: *observeInterval, Retention: *observeRetention}
+	if strings.TrimSpace(*clusterDir) != "" {
+		if *singlePrimary {
+			log.Fatal("cluster registrations cannot be combined with the local single-primary provider")
+		}
+		registrations, registrationErr := loadClusterRegistrations(*clusterDir)
+		if registrationErr != nil {
+			log.Fatal(registrationErr)
+		}
+		registry = newObservedClusters(registrations)
+		coordinator.Clusters = registry.clusters()
+		if len(registrations) > 0 {
+			providerRegistry.Register(app.CapabilitySinglePrimary)
+			// The observation coordinator asks Agents for state; there is
+			// nothing to probe locally, but the runtime needs an observer to run.
+			providers.Observer = combineObservers(providers.Observer, func(ctx context.Context) error { return ctx.Err() })
+		}
+		for _, registration := range registrations {
+			source := registry.sources[registration.TargetID]
+			storeInitializers = append(storeInitializers, func(store *controlstore.Store) error {
+				registry.bind(store, coordinator)
+				if err := store.EnsureRepository(ctx, controlstore.RepositoryRecord{ID: registration.RepositoryID, Fingerprint: registration.RepositoryFingerprint, Type: registration.RepositoryType, Endpoint: registration.RepositoryEndpoint, EncryptedCredentials: []byte{0}, KeyID: "agent-held"}); err != nil {
+					return fmt.Errorf("register repository for %s: %w", registration.TargetID, err)
+				}
+				if err := store.RegisterCluster(ctx, controlstore.TargetRecord{ProjectID: registration.ProjectID, TargetID: registration.TargetID, SystemIdentifier: registration.SystemIdentifier, DataDomain: registration.DataDomain}); err != nil {
+					return fmt.Errorf("register cluster %s: %w", registration.TargetID, err)
+				}
+				return store.EnrollAgent(ctx, controlstore.Enrollment{AgentID: registration.AgentID, ClusterID: registration.TargetID, NodeID: registration.NodeID, CertificateFingerprint: registration.CertificateFingerprint, Capabilities: registration.capabilities()})
+			})
+			managementRegistrations = append(managementRegistrations, operatorapi.ManagementRegistration{ProjectID: registration.ProjectID, TargetID: registration.TargetID, TargetNodeID: registration.NodeID, Provider: app.CapabilitySinglePrimary, BackupCapabilities: map[string]string{"full": app.CapabilitySinglePrimary + ".backup.full", "diff": app.CapabilitySinglePrimary + ".backup.diff", "incr": app.CapabilitySinglePrimary + ".backup.incr"}, MaintenanceCapabilities: map[string]string{"repository-check": app.CapabilitySinglePrimary + ".maintenance.repository-check", "expire": app.CapabilitySinglePrimary + ".maintenance.expire"}, PITREnableCapability: app.CapabilitySinglePrimary + ".pitr.enable", PITRDisableCapability: app.CapabilitySinglePrimary + ".pitr.disable", Discover: source.Discover, PITRCheck: source.PITRCheck})
+			restoreObservationFactories = append(restoreObservationFactories, func(store app.Store) (operatorapi.RestoreObservationSource, error) {
+				control, ok := store.(*controlstore.Store)
+				if !ok {
+					return nil, errors.New("observed cluster sources require controlstore")
+				}
+				registry.bind(control, coordinator)
+				return source, nil
+			})
+			restoreObservationTargets = append(restoreObservationTargets, registration.TargetID)
+		}
 	}
 	if *patroniEnable {
 		nodes, nodesErr := parseNamedURLs(*patroniNodes)
@@ -623,6 +668,24 @@ func main() {
 			return transportFactory(store)
 		}
 	}
+	if registry != nil {
+		inner := workerFactory
+		workerFactory = func(store app.Store) ([]app.Worker, error) {
+			control, ok := store.(*controlstore.Store)
+			if !ok {
+				return nil, errors.New("cluster observations require controlstore")
+			}
+			var workers []app.Worker
+			if inner != nil {
+				var err error
+				if workers, err = inner(store); err != nil {
+					return nil, err
+				}
+			}
+			registry.bind(control, coordinator)
+			return append(workers, coordinator), nil
+		}
+	}
 	if len(managementRegistrations) > 0 {
 		providers.BackupCapability = func(projectID, targetID, backupType string) (string, string, error) {
 			for _, registration := range managementRegistrations {
@@ -721,6 +784,16 @@ func main() {
 	configureSinglePrimaryRecoverability(&deps, *singlePrimary, func() *opruntime.RefreshingLocalSource {
 		return localRecoverability
 	})
+	if registry != nil {
+		deps.RecoverabilityFactory = func(store app.Store) (operatorapi.RecoverabilitySource, error) {
+			control, ok := store.(*controlstore.Store)
+			if !ok {
+				return nil, errors.New("observed recoverability requires controlstore")
+			}
+			registry.bind(control, coordinator)
+			return drill.Projection{Observations: opruntime.ObservedClusterRouter(registry.sources), Results: drill.TaskResultStore{Source: control, Capability: app.CapabilitySinglePrimary + ".maintenance.restore-drill"}}, nil
+		}
+	}
 	deps.WorkerFactory = workerFactory
 	var closeAgent func() error
 	if mode == app.ModeAgent {

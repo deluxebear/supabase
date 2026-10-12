@@ -416,7 +416,12 @@ func (h *Handler) putPolicy(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	p := controlstore.BackupPolicyRecord{ID: "studio-" + cluster, ProjectID: target.ProjectID, TargetID: cluster, RepositoryID: in.RepositoryID, Enabled: in.Enabled, BackupType: due.Type, BackupFrom: in.BackupFrom, DesignatedStandby: in.DesignatedStandby, MaxStandbyLagBytes: in.MaxStandbyLagBytes, Schedule: map[string]string{"full": in.FullSchedule, "diff": in.DiffSchedule, "incr": in.IncrSchedule}[due.Type], FullSchedule: in.FullSchedule, DiffSchedule: in.DiffSchedule, IncrSchedule: in.IncrSchedule, RetentionDays: in.RetentionDays, NextRunAt: due.At}
+	policyID, err := h.policyID(r.Context(), cluster, "studio-"+cluster)
+	if err != nil {
+		writeError(w, 500, "read_failed", err.Error())
+		return
+	}
+	p := controlstore.BackupPolicyRecord{ID: policyID, ProjectID: target.ProjectID, TargetID: cluster, RepositoryID: in.RepositoryID, Enabled: in.Enabled, BackupType: due.Type, BackupFrom: in.BackupFrom, DesignatedStandby: in.DesignatedStandby, MaxStandbyLagBytes: in.MaxStandbyLagBytes, Schedule: map[string]string{"full": in.FullSchedule, "diff": in.DiffSchedule, "incr": in.IncrSchedule}[due.Type], FullSchedule: in.FullSchedule, DiffSchedule: in.DiffSchedule, IncrSchedule: in.IncrSchedule, RetentionDays: in.RetentionDays, NextRunAt: due.At}
 	if err := h.store.UpsertBackupPolicy(r.Context(), p); err != nil {
 		writeError(w, 400, "update_failed", err.Error())
 		return
@@ -518,11 +523,28 @@ func (h *Handler) enablePITR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	policy := controlstore.StandardBackupPolicy(target.ProjectID, target.TargetID, request.RepositoryID, time.Now().UTC())
+	if policy.ID, err = h.policyID(r.Context(), target.TargetID, policy.ID); err != nil {
+		writeError(w, 500, "read_failed", err.Error())
+		return
+	}
 	if err := h.store.UpsertBackupPolicy(r.Context(), policy); err != nil {
 		writeError(w, 409, "policy_update_failed", err.Error())
 		return
 	}
 	writeJSON(w, 200, map[string]any{"pitr": status, "policy": policyResponse(policy)})
+}
+
+// policyID keeps one schedule per cluster: the scheduler runs every stored
+// policy, so writing a second ID would run two schedules.
+func (h *Handler) policyID(ctx context.Context, targetID, fallback string) (string, error) {
+	existing, err := h.store.GetBackupPolicy(ctx, targetID)
+	if errors.Is(err, controlstore.ErrBackupPolicyNotFound) {
+		return fallback, nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return existing.ID, nil
 }
 
 func (h *Handler) disablePITR(w http.ResponseWriter, r *http.Request) {

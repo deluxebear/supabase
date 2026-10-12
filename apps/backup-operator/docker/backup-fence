@@ -1,0 +1,19 @@
+#!/bin/sh
+# Write fence for Compose stacks: backup-fence <entry-point> block|status|unblock.
+# The Compose implementation arrives with in-place restores. Until then every
+# entry point reports open and refuses to block, so a restore stops before it
+# changes anything.
+set -eu
+case "${1:-}" in
+  kong-data-plane | supavisor | auth | storage | realtime | background-jobs | direct-postgres) ;;
+  *) exit 64 ;;
+esac
+case "${2:-}" in
+  status) echo open ;;
+  unblock) ;;
+  block)
+    echo "the Compose write fence is not available yet; restores are disabled" >&2
+    exit 1
+    ;;
+  *) exit 64 ;;
+esac

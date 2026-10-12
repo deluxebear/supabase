@@ -83,3 +83,31 @@ WHERE id=$4 AND credential_generation=$5 RETURNING credential_generation`
 	}
 	return generation, nil
 }
+
+// EnsureRepository registers a repository unless one with the same ID exists.
+// An existing record must have the same fingerprint, type, and endpoint.
+func (s *Store) EnsureRepository(ctx context.Context, repository RepositoryRecord) error {
+	if repository.ID == "" || repository.Fingerprint == "" || repository.Type == "" || repository.Endpoint == "" || len(repository.EncryptedCredentials) == 0 || repository.KeyID == "" {
+		return errors.New("complete repository identity is required")
+	}
+	now := s.now().UnixMilli()
+	query := `INSERT INTO repositories(id,fingerprint,type,endpoint,encrypted_credentials,key_id,created_at_ms,updated_at_ms)
+VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING`
+	lookup := "SELECT fingerprint,type,endpoint FROM repositories WHERE id=?"
+	if s.dialect == Postgres {
+		query = `INSERT INTO repositories(id,fingerprint,type,endpoint,encrypted_credentials,key_id,created_at_ms,updated_at_ms)
+VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(id) DO NOTHING`
+		lookup = "SELECT fingerprint,type,endpoint FROM repositories WHERE id=$1"
+	}
+	if _, err := s.db.ExecContext(ctx, query, repository.ID, repository.Fingerprint, repository.Type, repository.Endpoint, repository.EncryptedCredentials, repository.KeyID, now, now); err != nil {
+		return err
+	}
+	var fingerprint, kind, endpoint string
+	if err := s.db.QueryRowContext(ctx, lookup, repository.ID).Scan(&fingerprint, &kind, &endpoint); err != nil {
+		return err
+	}
+	if fingerprint != repository.Fingerprint || kind != repository.Type || endpoint != repository.Endpoint {
+		return fmt.Errorf("repository %s is already registered with a different identity", repository.ID)
+	}
+	return nil
+}

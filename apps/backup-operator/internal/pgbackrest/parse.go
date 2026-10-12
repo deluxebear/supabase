@@ -16,7 +16,10 @@ type StanzaInfo struct {
 	StatusMessage   string
 	DatabaseVersion string
 	SystemID        uint64
-	Backups         []BackupInfo
+	// DatabaseHistoryID is the repository's ID for the current database
+	// history; the archive path is <version>-<id>.
+	DatabaseHistoryID uint64
+	Backups           []BackupInfo
 }
 type BackupInfo struct {
 	Label, Type, Prior, ArchiveStart, ArchiveStop, LSNStart, LSNStop string
@@ -32,6 +35,7 @@ func ParseInfo(data []byte) ([]StanzaInfo, error) {
 			Message string `json:"message"`
 		} `json:"status"`
 		DB []struct {
+			ID       uint64      `json:"id"`
 			Version  string      `json:"version"`
 			SystemID json.Number `json:"system-id"`
 		} `json:"db"`
@@ -77,6 +81,7 @@ func ParseInfo(data []byte) ([]StanzaInfo, error) {
 				return nil, fmt.Errorf("parse system ID: %w", err)
 			}
 			info.SystemID = uint64(id)
+			info.DatabaseHistoryID = stanza.DB[len(stanza.DB)-1].ID
 		}
 		for _, backup := range stanza.Backup {
 			info.Backups = append(info.Backups, BackupInfo{Label: backup.Label, Type: backup.Type, Prior: backup.Prior, ArchiveStart: backup.Archive.Start, ArchiveStop: backup.Archive.Stop, LSNStart: backup.LSN.Start, LSNStop: backup.LSN.Stop, StartedAt: time.Unix(backup.Timestamp.Start, 0).UTC(), StoppedAt: time.Unix(backup.Timestamp.Stop, 0).UTC(), Size: backup.Info.Size, RepositorySize: backup.Info.Repository.Size})

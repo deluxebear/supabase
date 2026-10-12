@@ -10,6 +10,12 @@
 # The script appends fleet-managed/docker-compose.backup.yml. Every step is
 # idempotent, so a failed run can be repeated. `db` is stopped while the data
 # volume layout is migrated and restarted once more to turn on WAL archiving.
+#
+# It then enrolls the stack's backup Agent with the control plane's Backup
+# Operator, so it must run on the control-plane host: it signs the Agent's
+# certificate with the backup Agent CA and recreates the Operator. Set
+# FLEET_CONTROL_COMPOSE_PROJECT when the control plane's Compose project name is
+# not the default (`self-platform`).
 set -Eeuo pipefail
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,6 +27,10 @@ repository_port="${BACKUP_REPOSITORY_PORT:-9000}"
 management_network="${FLEET_MANAGEMENT_NETWORK_NAME:-fleet-management}"
 rc_image="${BACKUP_REPOSITORY_CLIENT_IMAGE:-rustfs/rc:v0.1.36}"
 agent_image="${FLEET_BACKUP_AGENT_IMAGE:-supabase-backup-agent:local}"
+control_dir="$repo_docker_dir/self-platform"
+control_project="${FLEET_CONTROL_COMPOSE_PROJECT:-self-platform}"
+agent_ca_dir="$control_dir/secrets/backup-operator/tls"
+cluster_dir="$control_dir/secrets/backup-operator/clusters"
 # The image's /usr/bin/pgbackrest wrapper drops --config and switches to another
 # user with sudo. The Agent and archive-push run the real binary as postgres.
 pgbackrest_binary=/usr/lib/pgbackrest/bin/pgbackrest.real
@@ -37,6 +47,7 @@ shift 2
 [[ "$project_ref" =~ ^[a-z0-9][a-z0-9-]{0,49}$ ]] || fail "project ref must be 1-50 lowercase letters, digits, or hyphens"
 [ -f "$control_env" ] || fail "control-plane environment is missing: $control_env"
 [ -f "$repository_ca" ] || fail "repository CA is missing: $repository_ca"
+[ -f "$agent_ca_dir/ca.key" ] || fail "backup Agent CA is missing; run self-platform/scripts/generate-backup-agent-trust.sh"
 
 compose_args=("$@" -f "$root_dir/docker-compose.backup.yml")
 compose() { docker compose "${compose_args[@]}" "$@"; }
@@ -47,6 +58,11 @@ for ((i = 1; i < ${#compose_args[@]}; i++)); do
   [ "${compose_args[i - 1]}" = "--env-file" ] && project_env="${compose_args[i]}"
 done
 [ -n "$project_env" ] && [ -f "$project_env" ] || fail "pass the project env file with --env-file"
+compose_project=""
+for ((i = 1; i < ${#compose_args[@]}; i++)); do
+  [ "${compose_args[i - 1]}" = "-p" ] && compose_project="${compose_args[i]}"
+done
+[ -n "$compose_project" ] || fail "pass the stack's Compose project name with -p"
 envval_from() { grep -E "^$2=" "$1" | head -1 | cut -d= -f2- | tr -d '\r'; }
 [ "$(envval_from "$project_env" MANAGED_PROJECT_REF)" = "$project_ref" ] ||
   fail "$project_env does not belong to $project_ref"
@@ -161,6 +177,10 @@ step "Creating stanza $stanza"
 pgbackrest stanza-create
 
 step "Turning on WAL archiving"
+# Without a timeout an idle database never completes a WAL segment, so the
+# recovery window would stop advancing. 120 seconds matches the Supabase image.
+compose exec -T db psql -U supabase_admin -h /var/run/postgresql -d postgres -v ON_ERROR_STOP=1 -Atc \
+  "ALTER SYSTEM SET archive_timeout = '120s'" -c "SELECT pg_reload_conf()" >/dev/null
 current="$(compose exec -T db psql -U supabase_admin -h /var/run/postgresql -d postgres -Atc \
   "select current_setting('archive_mode') || '|' || current_setting('archive_command')")"
 if [ "$current" = "on|$archive_command" ]; then
@@ -183,3 +203,54 @@ else
   pgbackrest --type=full backup
 fi
 pgbackrest info
+
+step "Enrolling the backup Agent"
+agent_id="backup-agent-$project_ref"
+if [ ! -f "$config_dir/agent.key" ]; then
+  openssl ecparam -name prime256v1 -genkey -noout -out "$work/agent.key"
+  openssl req -new -sha256 -key "$work/agent.key" -subj "/CN=$agent_id" -out "$work/agent.csr"
+  printf '%s\n' "subjectAltName=DNS:$agent_id" 'extendedKeyUsage=clientAuth' \
+    'keyUsage=digitalSignature,keyEncipherment' >"$work/agent.ext"
+  openssl x509 -req -sha256 -in "$work/agent.csr" -CA "$agent_ca_dir/ca.crt" -CAkey "$agent_ca_dir/ca.key" \
+    -CAserial "$work/ca.srl" -CAcreateserial -days 825 -extfile "$work/agent.ext" -out "$work/agent.crt" 2>/dev/null
+  install -m 0644 "$work/agent.crt" "$config_dir/agent.crt"
+  install -m 0600 "$work/agent.key" "$config_dir/agent.key"
+fi
+install -m 0644 "$agent_ca_dir/ca.crt" "$config_dir/operator-ca.crt"
+fingerprint="sha256:$(openssl x509 -in "$config_dir/agent.crt" -outform der | openssl dgst -sha256 | awk '{print $NF}')"
+system_identifier="$(compose exec -T db psql -U supabase_admin -h /var/run/postgresql -d postgres -Atc \
+  'select system_identifier from pg_control_system()')"
+revision="sha256:$(openssl dgst -sha256 "$config_file" | awk '{print $NF}')"
+mkdir -p "$cluster_dir"
+cat >"$work/cluster.json" <<JSON
+{
+  "projectId": "$project_ref",
+  "targetId": "$project_ref",
+  "nodeId": "$project_ref-db",
+  "agentId": "$agent_id",
+  "certificateFingerprint": "$fingerprint",
+  "systemIdentifier": "$system_identifier",
+  "dataDomain": "${compose_project}_managed-db-data",
+  "stanza": "$stanza",
+  "pgbackrestBinary": "$pgbackrest_binary",
+  "pgbackrestConfig": "$pgbackrest_config",
+  "repositoryId": "$bucket",
+  "repositoryType": "s3",
+  "repositoryEndpoint": "$repository_endpoint:$repository_port",
+  "repositoryLocation": "s3://$bucket/pgbackrest",
+  "repositoryFingerprint": "s3:$repository_endpoint/$bucket",
+  "repositoryRevision": "$revision"
+}
+JSON
+install -m 0600 "$work/cluster.json" "$cluster_dir/$project_ref.json"
+control_compose() {
+  docker compose -p "$control_project" --env-file "$control_env" -f "$control_dir/docker-compose.control-plane.yml" "$@"
+}
+control_compose up -d --force-recreate --no-deps backup-operator-config-init
+control_compose up -d --force-recreate --no-deps backup-operator
+
+step "Starting the backup Agent"
+compose --profile backup-validation create --no-recreate db-validation
+compose --profile backup-agent up -d backup-config-init fleet-docker-proxy-backup backup-agent
+echo "The Operator asks the Agent for its first observation within a minute."
+echo "Repository ID for the backup policy: $bucket"

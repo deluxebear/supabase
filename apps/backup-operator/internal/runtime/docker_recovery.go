@@ -3,8 +3,11 @@ package runtime
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -23,8 +26,12 @@ import (
 // supply only a confirmed plan; they cannot select the Docker daemon,
 // containers, volume, PGDATA, executable, repository, or fence command.
 type DockerRecoveryConfig struct {
-	ProjectID, TargetID, NodeID                      string
-	StatePath, DockerSocket                          string
+	ProjectID, TargetID, NodeID string
+	StatePath, DockerSocket     string
+	// DockerEndpoint reaches Docker through the stack's policy proxy instead of
+	// a socket, for example http://fleet-docker-proxy-backup:2375. Exactly one
+	// of DockerSocket and DockerEndpoint is set.
+	DockerEndpoint                                   string
 	SourceContainer, ValidationContainer, VolumeName string
 	PGData, ContainerVolumePath, ContainerPGData     string
 	PostgresDSN, ValidationDSN                       string
@@ -50,7 +57,13 @@ func NewDockerRecovery(ctx context.Context, config DockerRecoveryConfig) (*Docke
 	if err := validateDockerRecoveryConfig(config); err != nil {
 		return nil, err
 	}
-	client, err := NewDockerUnixClient(config.DockerSocket, config.SourceContainer, config.ValidationContainer)
+	var client *DockerClient
+	var err error
+	if config.DockerEndpoint != "" {
+		client, err = NewDockerClient(&http.Client{Timeout: 35 * time.Second}, config.DockerEndpoint, config.SourceContainer, config.ValidationContainer)
+	} else {
+		client, err = NewDockerUnixClient(config.DockerSocket, config.SourceContainer, config.ValidationContainer)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +171,14 @@ func (r *DockerRecovery) Expire(ctx context.Context, _ string) error {
 	return r.client.RunExpire(ctx, r.config.Stanza)
 }
 
+// ObserveCluster reports the cluster state the Operator plans with.
+func (r *DockerRecovery) ObserveCluster(ctx context.Context) (ClusterObservation, error) {
+	if r == nil || r.database == nil || r.client == nil {
+		return ClusterObservation{}, errors.New("Docker observation runtime is not configured")
+	}
+	return ClusterObserver{DB: r.database, PgBackRest: r.client, ClusterID: r.config.TargetID, NodeID: r.config.NodeID, Stanza: r.config.Stanza, PGData: r.config.PGData}.Observe(ctx)
+}
+
 func (r *DockerRecovery) RestoreDrill(context.Context, string) error {
 	return errors.New("isolated restore drill runtime is not configured for this Agent")
 }
@@ -199,7 +220,38 @@ func (r dockerPITRRuntime) SetArchiving(ctx context.Context, enabled bool) error
 	return err
 }
 func (r dockerPITRRuntime) Restart(ctx context.Context) error {
-	return r.recovery.docker.Restart(ctx, r.recovery.config.SourceContainer)
+	if err := r.recovery.docker.Restart(ctx, r.recovery.config.SourceContainer); err != nil {
+		return err
+	}
+	// Docker reports the container as started before PostgreSQL accepts
+	// connections; the next PITR steps need the database.
+	return waitForDatabase(ctx, r.recovery.database, dockerRestartReadyTimeout)
+}
+
+const dockerRestartReadyTimeout = 2 * time.Minute
+
+func waitForDatabase(ctx context.Context, database *sql.DB, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for {
+		attempt, cancelAttempt := context.WithTimeout(ctx, 5*time.Second)
+		var recovering bool
+		err := database.QueryRowContext(attempt, "SELECT pg_is_in_recovery()").Scan(&recovering)
+		cancelAttempt()
+		if err == nil && !recovering {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			if err == nil {
+				err = errors.New("database is still in recovery")
+			}
+			return fmt.Errorf("database did not become ready after restart: %w", err)
+		case <-ticker.C:
+		}
+	}
 }
 func (r dockerPITRRuntime) StanzaCreate(ctx context.Context) error {
 	return r.recovery.client.RunStanzaCreate(ctx, r.recovery.config.Stanza)
@@ -320,7 +372,16 @@ func (r *DockerRecovery) RollbackPlan(ctx context.Context, plan contracts.Recove
 }
 
 func validateDockerRecoveryConfig(c DockerRecoveryConfig) error {
-	values := []string{c.ProjectID, c.TargetID, c.NodeID, c.StatePath, c.DockerSocket, c.SourceContainer, c.ValidationContainer, c.VolumeName, c.PGData, c.ContainerVolumePath, c.ContainerPGData, c.PostgresDSN, c.ValidationDSN, c.PGBackRestBinary, c.PGBackRestConfig, c.Stanza, c.RepositoryID, c.RepositoryPath, c.DatabaseHistory, c.FenceCommand}
+	if (c.DockerSocket == "") == (c.DockerEndpoint == "") {
+		return errors.New("exactly one of a Docker socket and a Docker proxy endpoint is required")
+	}
+	if c.DockerEndpoint != "" {
+		endpoint, err := url.Parse(c.DockerEndpoint)
+		if err != nil || endpoint.Scheme != "http" || endpoint.Host == "" || (endpoint.Path != "" && endpoint.Path != "/") || endpoint.User != nil || endpoint.RawQuery != "" {
+			return errors.New("Docker proxy endpoint must be an http://host:port URL")
+		}
+	}
+	values := []string{c.ProjectID, c.TargetID, c.NodeID, c.StatePath, c.SourceContainer, c.ValidationContainer, c.VolumeName, c.PGData, c.ContainerVolumePath, c.ContainerPGData, c.PostgresDSN, c.ValidationDSN, c.PGBackRestBinary, c.PGBackRestConfig, c.Stanza, c.RepositoryID, c.RepositoryPath, c.DatabaseHistory, c.FenceCommand}
 	for _, value := range values {
 		if strings.TrimSpace(value) == "" {
 			return errors.New("complete Docker recovery identity, containers, volume, paths, repository, and fence command are required")
@@ -329,7 +390,10 @@ func validateDockerRecoveryConfig(c DockerRecoveryConfig) error {
 	if c.SourceContainer == c.ValidationContainer || !containerIDPattern.MatchString(c.SourceContainer) || !containerIDPattern.MatchString(c.ValidationContainer) || !containerIDPattern.MatchString(c.VolumeName) {
 		return errors.New("distinct enrolled Docker containers and a valid named volume are required")
 	}
-	for _, path := range []string{c.StatePath, c.DockerSocket, c.PGData, c.ContainerVolumePath, c.ContainerPGData, c.PGBackRestBinary, c.PGBackRestConfig, c.RepositoryPath, c.FenceCommand} {
+	if c.DockerSocket != "" && (!filepath.IsAbs(c.DockerSocket) || filepath.Clean(c.DockerSocket) != c.DockerSocket) {
+		return fmt.Errorf("Docker recovery path %q must be absolute and clean", c.DockerSocket)
+	}
+	for _, path := range []string{c.StatePath, c.PGData, c.ContainerVolumePath, c.ContainerPGData, c.PGBackRestBinary, c.PGBackRestConfig, c.RepositoryPath, c.FenceCommand} {
 		if !filepath.IsAbs(path) || filepath.Clean(path) != path {
 			return fmt.Errorf("Docker recovery path %q must be absolute and clean", path)
 		}
@@ -370,4 +434,13 @@ func (p *localDockerTopology) Observe(ctx context.Context, target contracts.Targ
 }
 func (p *localDockerTopology) RebuildStandbys(context.Context, contracts.TargetRef, contracts.TopologySnapshot) (contracts.Evidence, error) {
 	return contracts.Evidence{}, contracts.ErrUnsupported
+}
+
+// ObserveClusterEvidence implements app.ObservationRuntime.
+func (r *DockerRecovery) ObserveClusterEvidence(ctx context.Context) ([]byte, error) {
+	observation, err := r.ObserveCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(observation)
 }

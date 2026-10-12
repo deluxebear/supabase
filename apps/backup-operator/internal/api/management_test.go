@@ -129,6 +129,11 @@ func TestClusterPITRPolicyAndManualBackupAPI(t *testing.T) {
 	if err != nil || !policy.Enabled || policy.RetentionDays != 14 || policy.RepositoryID != "repo-a" {
 		t.Fatalf("standard policy: %#v %v", policy, err)
 	}
+	edit := httptest.NewRecorder()
+	mux.ServeHTTP(edit, authorizedRequest(http.MethodPut, "/v1/clusters/cluster-a/backup-policy", strings.NewReader(`{"enabled":true,"fullSchedule":"30 3 * * *","repositoryId":"repo-a","retentionDays":7}`)))
+	if edit.Code != 200 || !strings.Contains(edit.Body.String(), `"id":"`+policy.ID+`"`) {
+		t.Fatalf("editing the PITR policy created another schedule: %d %s", edit.Code, edit.Body.String())
+	}
 
 	manualRequest := authorizedRequest(http.MethodPost, "/v1/clusters/cluster-a/backups", strings.NewReader(`{"type":"full"}`))
 	manualRequest.Header.Set("Idempotency-Key", "manual-full-a")

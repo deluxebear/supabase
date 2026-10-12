@@ -20,8 +20,8 @@ func main() {
 	listen := flag.String("listen", envOr("FLEET_DOCKER_PROXY_LISTEN", "0.0.0.0:2375"), "HTTP listen address")
 	socket := flag.String("docker-socket", envOr("FLEET_DOCKER_PROXY_SOCKET", "/var/run/docker.sock"), "Docker Engine Unix socket")
 	project := flag.String("compose-project", os.Getenv("FLEET_DOCKER_PROXY_COMPOSE_PROJECT"), "only Compose project whose containers are visible")
-	policy := flag.String("policy", envOr("FLEET_DOCKER_PROXY_POLICY", "inventory-read"), "Docker API policy: inventory-read or lifecycle")
-	services := flag.String("services", os.Getenv("FLEET_DOCKER_PROXY_SERVICES"), "comma-separated Compose services whose containers the lifecycle policy may change")
+	policy := flag.String("policy", envOr("FLEET_DOCKER_PROXY_POLICY", "inventory-read"), "Docker API policy: inventory-read, lifecycle, or backup")
+	services := flag.String("services", os.Getenv("FLEET_DOCKER_PROXY_SERVICES"), "comma-separated Compose services whose containers the lifecycle or backup policy may change")
 	externalNetworks := flag.String("external-networks", os.Getenv("FLEET_DOCKER_PROXY_EXTERNAL_NETWORKS"), "comma-separated non-project networks service containers may join")
 	bindPrefixes := flag.String("bind-prefixes", os.Getenv("FLEET_DOCKER_PROXY_BIND_PREFIXES"), "comma-separated absolute host paths created containers may bind-mount")
 	showVersion := flag.Bool("version", false, "print version and exit")
@@ -36,6 +36,8 @@ func main() {
 		rules = dockerproxy.ReadOnlyInventoryRules()
 	case "lifecycle":
 		rules = dockerproxy.LifecycleRules()
+	case "backup":
+		rules = dockerproxy.BackupRules()
 	default:
 		log.Fatalf("unsupported Fleet Docker proxy policy %q", *policy)
 	}

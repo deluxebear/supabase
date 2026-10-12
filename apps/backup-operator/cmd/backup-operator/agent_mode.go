@@ -27,7 +27,7 @@ type agentModeFlags struct {
 	runtimeKind                                           *string
 	journalPath, lockPath, statePath                      *string
 	pgdata, postgresUnit, validationUnit                  *string
-	dockerSocket, sourceContainer                         *string
+	dockerSocket, dockerEndpoint, sourceContainer         *string
 	validationContainer, volumeName                       *string
 	containerVolumePath, containerPGData                  *string
 	postgresDSN, validationDSN                            *string
@@ -61,6 +61,7 @@ func registerAgentModeFlags() agentModeFlags {
 		postgresUnit:                  flag.String("agent-postgres-unit", os.Getenv("BACKUP_AGENT_POSTGRES_UNIT"), "enrolled PostgreSQL systemd unit"),
 		validationUnit:                flag.String("agent-validation-unit", os.Getenv("BACKUP_AGENT_VALIDATION_UNIT"), "enrolled isolated validation unit"),
 		dockerSocket:                  flag.String("agent-docker-socket", envOr("BACKUP_AGENT_DOCKER_SOCKET", "/var/run/docker.sock"), "enrolled Docker Engine Unix socket"),
+		dockerEndpoint:                flag.String("agent-docker-endpoint", os.Getenv("BACKUP_AGENT_DOCKER_ENDPOINT"), "enrolled Docker policy proxy URL, used instead of the socket"),
 		sourceContainer:               flag.String("agent-source-container", os.Getenv("BACKUP_AGENT_SOURCE_CONTAINER"), "enrolled PostgreSQL container"),
 		validationContainer:           flag.String("agent-validation-container", os.Getenv("BACKUP_AGENT_VALIDATION_CONTAINER"), "enrolled isolated validation container"),
 		volumeName:                    flag.String("agent-volume", os.Getenv("BACKUP_AGENT_VOLUME"), "enrolled Docker named volume"),
@@ -161,9 +162,13 @@ func buildAgentRecovery(ctx context.Context, flags agentModeFlags) (agentRecover
 			DrillValidatorBinary: *flags.drillValidatorBinary, DrillValidatorAllowedBinaries: splitNonEmpty(*flags.drillValidatorAllowedBinaries), DrillValidatorTimeout: *flags.drillValidatorTimeout,
 		})
 	case "docker":
+		dockerSocket := *flags.dockerSocket
+		if *flags.dockerEndpoint != "" {
+			dockerSocket = ""
+		}
 		recovery, err = opruntime.NewDockerRecovery(ctx, opruntime.DockerRecoveryConfig{
 			ProjectID: *flags.projectID, TargetID: *flags.targetID, NodeID: *flags.nodeID,
-			StatePath: *flags.statePath, DockerSocket: *flags.dockerSocket,
+			StatePath: *flags.statePath, DockerSocket: dockerSocket, DockerEndpoint: *flags.dockerEndpoint,
 			SourceContainer: *flags.sourceContainer, ValidationContainer: *flags.validationContainer, VolumeName: *flags.volumeName,
 			PGData: *flags.pgdata, ContainerVolumePath: *flags.containerVolumePath, ContainerPGData: *flags.containerPGData, PostgresDSN: *flags.postgresDSN, ValidationDSN: *flags.validationDSN,
 			PGBackRestBinary: *flags.pgbackrestBinary, PGBackRestConfig: *flags.pgbackrestConfig, Stanza: *flags.stanza,
@@ -192,6 +197,9 @@ func registerAgentRecoveryRoutes(recovery agentRecovery, flags agentModeFlags, r
 		drillConfigured = configured.DrillConfigured()
 	}
 	managementCapabilities := app.ManagementCapabilities(app.CapabilitySinglePrimary, drillConfigured)
+	if _, ok := recovery.(app.ObservationRuntime); ok {
+		managementCapabilities = append(managementCapabilities, opruntime.ObserveCapability)
+	}
 	for _, capability := range managementCapabilities {
 		if err := router.Register(*flags.projectID, *flags.targetID, capability, managementHandler); err != nil {
 			return nil, err

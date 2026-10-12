@@ -110,6 +110,20 @@ func LifecycleRules() []Rule {
 	}
 }
 
+// BackupRules are the Docker calls a backup Agent needs: inspect its
+// containers, and start, stop, or restart the database, the validation
+// database, and the services its write fence stops. Nothing is created,
+// removed, pulled, or attached.
+func BackupRules() []Rule {
+	return []Rule{
+		rule(http.MethodGet, `^/_ping$`, ScopeHost),
+		rule(http.MethodHead, `^/_ping$`, ScopeHost),
+		rule(http.MethodGet, `^/version$`, ScopeHost),
+		rule(http.MethodGet, `^/containers/`+containerID+`/json$`, ScopeContainer),
+		rule(http.MethodPost, `^/containers/`+containerID+`/(start|stop|restart)$`, ScopeServiceContainer),
+	}
+}
+
 // Config configures a Proxy.
 type Config struct {
 	// SocketPath is the Docker Engine Unix socket.

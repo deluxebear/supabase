@@ -32,24 +32,34 @@ services:
       - backup-config:/etc/pgbackrest:ro
 
   # Copies the project's pgBackRest configuration and repository CA into a
-  # volume owned by the postgres user (UID 100), which `db` and the Agent read,
-  # and hands the Agent its state volume.
+  # volume owned by the postgres user (UID 100), which `db` and the Agent read.
+  # The Agent's mTLS identity goes to a volume only the Agent mounts.
   backup-config-init:
     image: alpine:3.22
     restart: "no"
+    network_mode: none
     command:
       - /bin/sh
       - -ceu
       - |
         install -o 100 -g 101 -m 0600 /source/pgbackrest.conf /config/pgbackrest.conf
         install -o 100 -g 101 -m 0644 /source/ca.crt /config/ca.crt
-        chown 100:101 /config /agent-state
+        chown 100:101 /config /agent-state /agent-tls
         chmod 0750 /config
-        chmod 0700 /agent-state
+        chmod 0700 /agent-state /agent-tls
+        # pgBackRest S3 repositories have no local path; the restore engine's
+        # repository write gate applies to this directory instead.
+        install -d -o 100 -g 101 -m 0750 /agent-state/repository-gate
+        if [ -f /source/agent.key ]; then
+          install -o 100 -g 101 -m 0644 /source/agent.crt /agent-tls/agent.crt
+          install -o 100 -g 101 -m 0600 /source/agent.key /agent-tls/agent.key
+          install -o 100 -g 101 -m 0644 /source/operator-ca.crt /agent-tls/operator-ca.crt
+        fi
     volumes:
       - ${FLEET_BACKUP_CONFIG_ROOT:?set FLEET_BACKUP_CONFIG_ROOT}:/source:ro
       - backup-config:/config
       - backup-agent-state:/agent-state
+      - backup-agent-tls:/agent-tls
 
   # One-shot data volume layout migration, run by scripts/enable-backups.sh
   # while `db` is stopped. MIGRATE_DIRECTION=rollback reverses it.
@@ -107,9 +117,37 @@ services:
     volumes:
       - managed-db-data:/volume
 
+  # Starts only during a restore, after `db` is stopped, to validate the
+  # restored PGDATA before cut-over. It shares the data volume with `db`, so it
+  # must never run at the same time: only the Agent starts it.
+  db-validation:
+    image: deluxebear/postgres:17
+    container_name: ${MANAGED_CONTAINER_PREFIX:?set MANAGED_CONTAINER_PREFIX}-db-validation
+    profiles: [backup-validation]
+    restart: "no"
+    user: postgres
+    network_mode: none
+    entrypoint: [postgres]
+    command:
+      - -D
+      - /var/lib/postgresql/data
+      - -p
+      - "5433"
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - listen_addresses=
+      - -c
+      - archive_mode=off
+    volumes:
+      - managed-db-data:/var/lib/postgresql
+      - managed-db-socket:/var/run/postgresql
+      - db-config:/etc/postgresql-custom
+      - backup-config:/etc/pgbackrest:ro
+
   # Runs pgBackRest and the Backup Operator in Agent mode, on the same image
-  # as `db`. It connects to the Operator once enrolled; until then
-  # scripts/enable-backups.sh runs pgBackRest commands in it with `run`.
+  # as `db`. It reaches the Operator and the repository on the management
+  # network, and Docker only through fleet-docker-proxy-backup.
   backup-agent:
     image: ${FLEET_BACKUP_AGENT_IMAGE:?set FLEET_BACKUP_AGENT_IMAGE}
     profiles: [backup-agent]
@@ -118,16 +156,74 @@ services:
     depends_on:
       backup-config-init:
         condition: service_completed_successfully
+    environment:
+      BACKUP_AGENT_RUNTIME: docker
+      BACKUP_AGENT_CONTROL_ADDRESS: ${FLEET_BACKUP_OPERATOR_ADDRESS:-backup-operator:9443}
+      BACKUP_AGENT_SERVER_NAME: backup-operator
+      BACKUP_AGENT_CLIENT_CERT: /run/backup-agent/tls/agent.crt
+      BACKUP_AGENT_CLIENT_KEY: /run/backup-agent/tls/agent.key
+      BACKUP_AGENT_SERVER_CA: /run/backup-agent/tls/operator-ca.crt
+      BACKUP_AGENT_ID: backup-agent-${MANAGED_PROJECT_REF:?set MANAGED_PROJECT_REF}
+      BACKUP_AGENT_PROJECT: ${MANAGED_PROJECT_REF}
+      BACKUP_AGENT_TARGET: ${MANAGED_PROJECT_REF}
+      BACKUP_AGENT_NODE: ${MANAGED_PROJECT_REF}-db
+      BACKUP_AGENT_PGDATA: /var/lib/postgresql/data
+      BACKUP_AGENT_DOCKER_ENDPOINT: http://fleet-docker-proxy-backup:2375
+      BACKUP_AGENT_SOURCE_CONTAINER: ${MANAGED_CONTAINER_PREFIX}-db
+      BACKUP_AGENT_VALIDATION_CONTAINER: ${MANAGED_CONTAINER_PREFIX}-db-validation
+      BACKUP_AGENT_VOLUME: ${COMPOSE_PROJECT_NAME}_managed-db-data
+      BACKUP_AGENT_CONTAINER_VOLUME_PATH: /var/lib/postgresql
+      BACKUP_AGENT_CONTAINER_PGDATA: /var/lib/postgresql/data
+      BACKUP_AGENT_POSTGRES_DSN: host=/var/run/postgresql port=5432 user=supabase_admin dbname=postgres sslmode=disable
+      BACKUP_AGENT_VALIDATION_DSN: host=/var/run/postgresql port=5433 user=supabase_admin dbname=postgres sslmode=disable
+      BACKUP_AGENT_PGBACKREST_BINARY: /usr/lib/pgbackrest/bin/pgbackrest.real
+      BACKUP_AGENT_PGBACKREST_CONFIG: /etc/pgbackrest/pgbackrest.conf
+      BACKUP_AGENT_STANZA: ${MANAGED_PROJECT_REF}
+      BACKUP_AGENT_REPOSITORY_ID: fleet-backup-${MANAGED_PROJECT_REF}
+      BACKUP_AGENT_REPOSITORY_PATH: /var/lib/backup-agent/repository-gate
+      BACKUP_AGENT_FENCE_COMMAND: /usr/local/bin/backup-fence
+      BACKUP_AGENT_ROLLBACK_WINDOW: ${FLEET_BACKUP_ROLLBACK_WINDOW:-1h}
     volumes:
       - managed-db-data:/var/lib/postgresql
       - managed-db-socket:/var/run/postgresql
       - backup-config:/etc/pgbackrest:ro
       - backup-agent-state:/var/lib/backup-agent
+      - backup-agent-tls:/run/backup-agent/tls:ro
+    security_opt: [no-new-privileges:true]
     networks:
-      default: {}
       management: {}
+      backup-docker-api: {}
+
+  # The only path from the backup Agent to Docker: inspect project containers,
+  # and start, stop, or restart `db` and `db-validation`.
+  fleet-docker-proxy-backup:
+    image: ${FLEET_BACKUP_AGENT_IMAGE:?set FLEET_BACKUP_AGENT_IMAGE}
+    profiles: [backup-agent]
+    restart: unless-stopped
+    user: "0:0"
+    entrypoint: [/usr/local/bin/fleet-docker-proxy]
+    command: []
+    environment:
+      FLEET_DOCKER_PROXY_COMPOSE_PROJECT: ${COMPOSE_PROJECT_NAME}
+      FLEET_DOCKER_PROXY_POLICY: backup
+      FLEET_DOCKER_PROXY_LISTEN: 0.0.0.0:2375
+      FLEET_DOCKER_PROXY_SERVICES: db,db-validation
+    healthcheck:
+      test: [CMD, curl, -fsS, -o, /dev/null, http://127.0.0.1:2375/_ping]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt: [no-new-privileges:true]
+    networks: [backup-docker-api]
+
+networks:
+  backup-docker-api:
+    internal: true
 
 volumes:
   managed-db-socket:
   backup-config:
   backup-agent-state:
+  backup-agent-tls:

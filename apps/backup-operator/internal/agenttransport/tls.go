@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"sync"
 	"time"
@@ -202,6 +203,8 @@ func (c Client) Run(ctx context.Context) error {
 			backoff = minBackoff
 		} else if ctx.Err() != nil {
 			return nil
+		} else {
+			slog.Warn("Agent control stream ended; reconnecting", "address", c.Address, "error", err, "retry_in", backoff)
 		}
 		timer := time.NewTimer(backoff)
 		select {

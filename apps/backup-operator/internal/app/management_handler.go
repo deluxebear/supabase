@@ -45,6 +45,12 @@ func (h ManagementTaskHandler) ExecuteWithEvidence(ctx context.Context, task con
 	return h.execute(ctx, task)
 }
 
+// ObservationRuntime reports typed cluster state for the Operator. The result
+// must marshal to JSON.
+type ObservationRuntime interface {
+	ObserveClusterEvidence(context.Context) ([]byte, error)
+}
+
 type TypedRestoreDrillRuntime interface {
 	RestoreDrillEvidence(context.Context, string, drill.Target) (drill.Result, error)
 }
@@ -124,6 +130,15 @@ func (h ManagementTaskHandler) execute(ctx context.Context, task controlstore.Ou
 			return nil, err
 		}
 		return nil, h.Runtime.Expire(ctx, task.IdempotencyKey)
+	case "maintenance.observe":
+		if err := validateMaintenancePayload(task.Payload, "observe"); err != nil {
+			return nil, err
+		}
+		typed, ok := h.Runtime.(ObservationRuntime)
+		if !ok {
+			return nil, errors.New("cluster observation is not supported by this runtime")
+		}
+		return typed.ObserveClusterEvidence(ctx)
 	case "maintenance.restore-drill":
 		var payload struct {
 			Kind   string       `json:"kind"`

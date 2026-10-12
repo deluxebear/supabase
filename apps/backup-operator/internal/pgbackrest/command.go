@@ -201,6 +201,23 @@ func (c Client) RunInfo(ctx context.Context, stanza string) ([]StanzaInfo, error
 	}
 	return ParseInfo(out.Stdout)
 }
+
+// RunInfoJSON returns pgBackRest's JSON info after checking that it parses.
+func (c Client) RunInfoJSON(ctx context.Context, stanza string) ([]byte, []StanzaInfo, error) {
+	command, err := c.Builder.Info(stanza)
+	if err != nil {
+		return nil, nil, err
+	}
+	out, err := c.execute(ctx, "info", command)
+	if err != nil {
+		return nil, nil, err
+	}
+	infos, err := ParseInfo(out.Stdout)
+	if err != nil {
+		return nil, nil, err
+	}
+	return out.Stdout, infos, nil
+}
 func (c Client) RunCheck(ctx context.Context, stanza string) error {
 	command, err := c.Builder.Check(stanza)
 	if err != nil {

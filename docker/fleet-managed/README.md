@@ -316,10 +316,12 @@ project gets its own bucket, a user that can access only that bucket, and its
 own encryption passphrase. The design is in
 [Phase 3: backups on Fleet Compose stacks](../../docs/self-hosted-parity/2026-10-12-phase3-compose-backups-design.md).
 
-Prepare the control plane once:
+Prepare the control plane once, before its first `up` with this release: the
+Backup Operator's Agent listener needs the backup Agent trust material.
 
 ```bash
 docker/self-platform/scripts/generate-backup-repository-tls.sh
+docker/self-platform/scripts/generate-backup-agent-trust.sh
 docker build -f apps/backup-operator/Dockerfile.backup-agent \
   -t supabase-backup-agent:local apps/backup-operator
 ```
@@ -343,6 +345,27 @@ credentials, migrates the data volume so PGDATA becomes its `data`
 subdirectory, creates the stanza, turns on WAL archiving, and takes a first
 full backup. `db` is stopped for the migration (typically seconds) and
 restarted once more for archiving. Every step is idempotent.
+
+It then enrolls the stack's backup Agent: it signs the Agent's certificate with
+the backup Agent CA, writes the cluster registration to
+`self-platform/secrets/backup-operator/clusters/<ref>.json`, recreates the
+Backup Operator so it loads the registration, and starts `backup-agent` and
+`fleet-docker-proxy-backup`. Because of these steps it runs on the
+control-plane host. Set `FLEET_CONTROL_COMPOSE_PROJECT` when the control
+plane's Compose project is not named `self-platform`.
+
+The Agent has no Docker socket. `fleet-docker-proxy-backup` lets it inspect
+this project's containers and start, stop, or restart only `db` and
+`db-validation`. `db-validation` is created but never started by Compose: it
+shares the data volume with `db`, and only the Agent starts it during a
+restore, after `db` has stopped. Do not start it with `--profile
+backup-validation up`.
+
+The Operator asks each Agent for an observation every 5 minutes and plans with
+it; Studio then shows the project's backups, PITR status, and recovery window.
+Use the repository ID `fleet-backup-<ref>` in the backup policy. In-place
+restores are not available yet: the Compose write fence refuses to block, so a
+restore stops before it changes anything.
 
 After that, every `docker compose` command for the stack must include
 `-f fleet-managed/docker-compose.backup.yml`, or `db` is recreated with the

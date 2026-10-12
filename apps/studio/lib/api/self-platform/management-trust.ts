@@ -928,12 +928,24 @@ export async function requestManagementDomain(
     await recordManagementDomainObservation(
       binding.managementTargetId,
       domainName,
-      error instanceof ManagementTrustDownstreamError && error.status === 426
-        ? 'incompatible'
-        : 'unavailable'
+      domainStateAfterError(error)
     )
     throw error
   }
+}
+
+/**
+ * A domain serves every project bound to the target, so only failures of the
+ * domain itself change its state. An application error for one project, such
+ * as a 404 for a cluster without backups, means the domain answered.
+ */
+export function domainStateAfterError(
+  error: unknown
+): 'available' | 'unavailable' | 'incompatible' {
+  if (!(error instanceof ManagementTrustDownstreamError)) return 'unavailable'
+  if (error.status === 426) return 'incompatible'
+  if (error.status === 401 || error.status === 403 || error.status >= 500) return 'unavailable'
+  return 'available'
 }
 
 async function recordManagementDomainObservation(

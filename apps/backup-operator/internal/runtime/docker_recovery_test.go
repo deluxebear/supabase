@@ -24,6 +24,11 @@ func TestDockerRecoveryConfigFailsClosedOutsideEnrollment(t *testing.T) {
 	if err := validateDockerRecoveryConfig(base); err != nil {
 		t.Fatal(err)
 	}
+	proxied := base
+	proxied.DockerSocket, proxied.DockerEndpoint = "", "http://fleet-docker-proxy-backup:2375"
+	if err := validateDockerRecoveryConfig(proxied); err != nil {
+		t.Fatal(err)
+	}
 	tests := []struct {
 		name   string
 		mutate func(*DockerRecoveryConfig)
@@ -34,6 +39,10 @@ func TestDockerRecoveryConfigFailsClosedOutsideEnrollment(t *testing.T) {
 		{"relative host PGDATA", func(c *DockerRecoveryConfig) { c.PGData = "pgdata" }},
 		{"unclean container PGDATA", func(c *DockerRecoveryConfig) { c.ContainerPGData = "/var/lib/../tmp" }},
 		{"missing rollback window", func(c *DockerRecoveryConfig) { c.RollbackWindow = 0 }},
+		{"socket and proxy endpoint", func(c *DockerRecoveryConfig) { c.DockerEndpoint = "http://docker-proxy:2375" }},
+		{"neither socket nor proxy endpoint", func(c *DockerRecoveryConfig) { c.DockerSocket = "" }},
+		{"proxy endpoint with a path", func(c *DockerRecoveryConfig) { c.DockerSocket, c.DockerEndpoint = "", "http://docker-proxy:2375/v1.45" }},
+		{"proxy endpoint over another scheme", func(c *DockerRecoveryConfig) { c.DockerSocket, c.DockerEndpoint = "", "unix:///var/run/docker.sock" }},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

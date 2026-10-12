@@ -101,3 +101,27 @@ func TestManagementTaskHandlerReturnsTypedBackupManifestEvidence(t *testing.T) {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 }
+
+type managementObservationRuntime struct{ managementRuntimeFake }
+
+func (f *managementObservationRuntime) ObserveClusterEvidence(context.Context) ([]byte, error) {
+	f.calls = append(f.calls, "observe")
+	return []byte(`{"clusterId":"cluster-a"}`), nil
+}
+
+func TestManagementTaskHandlerReturnsObservationEvidence(t *testing.T) {
+	observe := controlstore.OutboxTask{Capability: CapabilitySinglePrimary + ".maintenance.observe", Payload: []byte(`{"kind":"observe"}`)}
+	runtime := &managementObservationRuntime{}
+	evidence, err := (ManagementTaskHandler{Provider: CapabilitySinglePrimary, Runtime: runtime}).ExecuteWithEvidence(context.Background(), observe)
+	if err != nil || string(evidence) != `{"clusterId":"cluster-a"}` {
+		t.Fatalf("evidence = %s, err = %v", evidence, err)
+	}
+	if _, err := (ManagementTaskHandler{Provider: CapabilitySinglePrimary, Runtime: &managementRuntimeFake{}}).ExecuteWithEvidence(context.Background(), observe); err == nil {
+		t.Fatal("a runtime without observations accepted an observe task")
+	}
+	mismatched := observe
+	mismatched.Payload = []byte(`{"kind":"expire"}`)
+	if _, err := (ManagementTaskHandler{Provider: CapabilitySinglePrimary, Runtime: runtime}).ExecuteWithEvidence(context.Background(), mismatched); err == nil {
+		t.Fatal("an observe task with another payload kind was accepted")
+	}
+}

@@ -21,6 +21,7 @@ type WALInventory struct {
 	Segments              []recoverability.ArchiveSegment  `json:"segments"`
 	History               []recoverability.TimelineHistory `json:"history"`
 	Drill                 *recoverability.DrillRecord      `json:"drill,omitempty"`
+	WALSegmentSize        uint64                           `json:"walSegmentSize,omitempty"`
 }
 type POSIXWALSource struct {
 	InventoryFile string
@@ -47,13 +48,19 @@ func (s POSIXWALSource) ObserveWAL(_ context.Context, manifest controlstore.Back
 	if err := json.Unmarshal(payload, &inventory); err != nil {
 		return recoverability.Observation{}, fmt.Errorf("WAL inventory contains invalid JSON: %w", err)
 	}
+	return observeInventoryWAL(inventory, s.Info, s.Stanza, manifest)
+}
+
+// observeInventoryWAL joins a WAL inventory with typed pgBackRest info for the
+// backup named by a server-recorded manifest.
+func observeInventoryWAL(inventory WALInventory, infos []pgbackrest.StanzaInfo, stanzaName string, manifest controlstore.BackupManifestRecord) (recoverability.Observation, error) {
 	if inventory.RepositoryFingerprint == "" || inventory.RepositoryRevision == "" || inventory.DatabaseHistoryID == 0 || inventory.CurrentTimeline == 0 {
 		return recoverability.Observation{}, errors.New("WAL inventory identity is incomplete")
 	}
 	var stanza *pgbackrest.StanzaInfo
-	for i := range s.Info {
-		if s.Info[i].Name == s.Stanza {
-			stanza = &s.Info[i]
+	for i := range infos {
+		if infos[i].Name == stanzaName {
+			stanza = &infos[i]
 			break
 		}
 	}
@@ -71,7 +78,7 @@ func (s POSIXWALSource) ObserveWAL(_ context.Context, manifest controlstore.Back
 		return recoverability.Observation{}, fmt.Errorf("backup %s is absent from typed pgBackRest info", manifest.BackupLabel)
 	}
 	repo := recoverability.RepositoryIdentity{Fingerprint: inventory.RepositoryFingerprint, Revision: inventory.RepositoryRevision}
-	return recoverability.Observation{Repository: repo, Backup: recoverability.BackupObservation{Label: backup.Label, Stanza: s.Stanza, StartedAt: backup.StartedAt.UTC(), CompletedAt: backup.StoppedAt.UTC(), ArchiveStart: backup.ArchiveStart, ArchiveStop: backup.ArchiveStop, DatabaseSystemID: stanza.SystemID, DatabaseHistoryID: inventory.DatabaseHistoryID, RepositoryIdentity: repo}, Archive: recoverability.ArchiveObservation{Segments: inventory.Segments, History: inventory.History, CurrentTimeline: inventory.CurrentTimeline, RepositoryIdentity: repo}, Drill: inventory.Drill}, nil
+	return recoverability.Observation{Repository: repo, Backup: recoverability.BackupObservation{Label: backup.Label, Stanza: stanzaName, StartedAt: backup.StartedAt.UTC(), CompletedAt: backup.StoppedAt.UTC(), ArchiveStart: backup.ArchiveStart, ArchiveStop: backup.ArchiveStop, DatabaseSystemID: stanza.SystemID, DatabaseHistoryID: inventory.DatabaseHistoryID, RepositoryIdentity: repo}, Archive: recoverability.ArchiveObservation{Segments: inventory.Segments, History: inventory.History, CurrentTimeline: inventory.CurrentTimeline, RepositoryIdentity: repo}, Drill: inventory.Drill, WALSegmentSize: inventory.WALSegmentSize}, nil
 }
 
 func ExplicitSegment(name string, through time.Time) recoverability.ArchiveSegment {
