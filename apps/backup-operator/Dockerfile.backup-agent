@@ -14,7 +14,8 @@ ARG VERSION=dev
 ARG COMMIT=unknown
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/backup-operator ./cmd/backup-operator \
     && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w -X github.com/supabase/supabase/apps/backup-operator/internal/version.Version=${VERSION} -X github.com/supabase/supabase/apps/backup-operator/internal/version.Commit=${COMMIT}" -o /out/fleet-docker-proxy ./cmd/fleet-docker-proxy \
-    && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/backup-fence ./cmd/compose-fence
+    && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/backup-fence ./cmd/compose-fence \
+    && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/drill-validator ./cmd/drill-validator
 
 FROM ${POSTGRES_IMAGE}
 ARG VERSION=dev
@@ -30,6 +31,7 @@ COPY --from=build /out/backup-operator /usr/local/bin/backup-operator
 # always matches the Agent that uses it.
 COPY --from=build /out/fleet-docker-proxy /usr/local/bin/fleet-docker-proxy
 COPY --from=build /out/backup-fence /usr/local/bin/backup-fence
+COPY --from=build /out/drill-validator /usr/local/bin/drill-validator
 # The database image's pg_isready check does not apply to the Agent or proxy.
 HEALTHCHECK NONE
 USER postgres

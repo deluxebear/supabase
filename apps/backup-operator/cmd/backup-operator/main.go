@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -268,7 +269,7 @@ func main() {
 				}
 				return store.EnrollAgent(ctx, controlstore.Enrollment{AgentID: registration.AgentID, ClusterID: registration.TargetID, NodeID: registration.NodeID, CertificateFingerprint: registration.CertificateFingerprint, Capabilities: registration.capabilities()})
 			})
-			managementRegistrations = append(managementRegistrations, operatorapi.ManagementRegistration{ProjectID: registration.ProjectID, TargetID: registration.TargetID, TargetNodeID: registration.NodeID, Provider: app.CapabilitySinglePrimary, BackupCapabilities: map[string]string{"full": app.CapabilitySinglePrimary + ".backup.full", "diff": app.CapabilitySinglePrimary + ".backup.diff", "incr": app.CapabilitySinglePrimary + ".backup.incr"}, MaintenanceCapabilities: map[string]string{"repository-check": app.CapabilitySinglePrimary + ".maintenance.repository-check", "expire": app.CapabilitySinglePrimary + ".maintenance.expire"}, PITREnableCapability: app.CapabilitySinglePrimary + ".pitr.enable", PITRDisableCapability: app.CapabilitySinglePrimary + ".pitr.disable", Discover: source.Discover, PITRCheck: source.PITRCheck})
+			managementRegistrations = append(managementRegistrations, operatorapi.ManagementRegistration{ProjectID: registration.ProjectID, TargetID: registration.TargetID, TargetNodeID: registration.NodeID, Provider: app.CapabilitySinglePrimary, BackupCapabilities: map[string]string{"full": app.CapabilitySinglePrimary + ".backup.full", "diff": app.CapabilitySinglePrimary + ".backup.diff", "incr": app.CapabilitySinglePrimary + ".backup.incr"}, MaintenanceCapabilities: registeredMaintenanceCapabilities(*drillEnable), PITREnableCapability: app.CapabilitySinglePrimary + ".pitr.enable", PITRDisableCapability: app.CapabilitySinglePrimary + ".pitr.disable", Discover: source.Discover, PITRCheck: source.PITRCheck})
 			restoreObservationFactories = append(restoreObservationFactories, func(store app.Store) (operatorapi.RestoreObservationSource, error) {
 				control, ok := store.(*controlstore.Store)
 				if !ok {
@@ -727,18 +728,34 @@ func main() {
 		// after all provider-specific task mappings have been registered.
 	}
 	if *drillEnable {
-		if !*singlePrimary || *agentModeConfig.runtimeKind != "systemd" || *drillInterval <= 0 || *drillTargetLag <= 0 || *drillLeaseTTL <= 0 || *drillLeaseTTL >= *drillInterval {
-			log.Fatal("restore drills require an enabled single-primary provider and positive interval/target lag")
+		hasLocalProvider := *singlePrimary && *agentModeConfig.runtimeKind == "systemd"
+		hasRegisteredClusters := registry != nil && len(registry.order) > 0
+		if (!hasLocalProvider && !hasRegisteredClusters) || *drillInterval <= 0 || *drillTargetLag <= 0 || *drillLeaseTTL <= 0 || *drillLeaseTTL >= *drillInterval {
+			log.Fatal("restore drills require an enabled single-primary provider or registered clusters, and positive interval/target lag")
 		}
+		drillClusters := map[string]string{}
+		if hasLocalProvider {
+			drillClusters[*spTarget] = *spProject
+		}
+		if registry != nil {
+			for _, target := range registry.order {
+				drillClusters[target] = registry.sources[target].Cluster.ProjectID
+			}
+		}
+		drillClusterIDs := make([]string, 0, len(drillClusters))
+		for target := range drillClusters {
+			drillClusterIDs = append(drillClusterIDs, target)
+		}
+		sort.Strings(drillClusterIDs)
 		providers.DrillFactory = func(store *controlstore.Store) (app.Worker, error) {
 			if configuredRestoreObservations == nil {
 				return nil, errors.New("restore drill server observations are unavailable")
 			}
 			results := drill.TaskResultStore{Source: store, Capability: app.CapabilitySinglePrimary + ".maintenance.restore-drill"}
-			targets := drill.ServerObservationTargets{Source: configuredRestoreObservations, Results: results, ClusterIDs: []string{*spTarget}, TargetLag: *drillTargetLag, MinInterval: *drillInterval}
+			targets := drill.ServerObservationTargets{Source: configuredRestoreObservations, Results: results, ClusterIDs: drillClusterIDs, TargetLag: *drillTargetLag, MinInterval: *drillInterval}
 			return drill.Coordinator{Targets: targets, Jobs: store, Interval: *drillInterval, LeaseTTL: *drillLeaseTTL, Capability: func(projectID, targetID string) (string, error) {
-				if projectID != *spProject || targetID != *spTarget {
-					return "", errors.New("restore drill target does not match the configured recovery domain")
+				if project, ok := drillClusters[targetID]; !ok || project != projectID {
+					return "", errors.New("restore drill target does not match a configured recovery domain")
 				}
 				return app.CapabilitySinglePrimary + ".maintenance.restore-drill", nil
 			}}, nil

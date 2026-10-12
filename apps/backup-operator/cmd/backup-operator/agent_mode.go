@@ -37,6 +37,7 @@ type agentModeFlags struct {
 	rollbackWindow                                        *time.Duration
 	drillEnabled, drillRepositoryReadOnly                 *bool
 	drillStatePath, drillWorkspaceRoot, drillAllowedRoots *string
+	drillPGBackRestConfig                                 *string
 	drillMinimumFreeBytes                                 *int64
 	drillValidatorBinary, drillValidatorAllowedBinaries   *string
 	drillValidatorTimeout                                 *time.Duration
@@ -80,6 +81,7 @@ func registerAgentModeFlags() agentModeFlags {
 		drillEnabled:                  flag.Bool("agent-drill-enable", envBool("BACKUP_AGENT_DRILL_ENABLED", false), "enable isolated restore drill execution"),
 		drillRepositoryReadOnly:       flag.Bool("agent-drill-repository-read-only", envBool("BACKUP_AGENT_DRILL_REPOSITORY_READ_ONLY", false), "assert enrolled drill repository credentials are read-only"),
 		drillStatePath:                flag.String("agent-drill-state", envOr("BACKUP_AGENT_DRILL_STATE", "/var/lib/backup-agent/drills.json"), "durable drill evidence path"),
+		drillPGBackRestConfig:         flag.String("agent-drill-pgbackrest-config", os.Getenv("BACKUP_AGENT_DRILL_PGBACKREST_CONFIG"), "pgBackRest config with read-only repository credentials for drills (Docker runtime)"),
 		drillWorkspaceRoot:            flag.String("agent-drill-workspace-root", os.Getenv("BACKUP_AGENT_DRILL_WORKSPACE_ROOT"), "independent recovery-domain workspace root"),
 		drillAllowedRoots:             flag.String("agent-drill-allowed-roots", os.Getenv("BACKUP_AGENT_DRILL_ALLOWED_ROOTS"), "comma-separated allowlisted drill workspace roots"),
 		drillMinimumFreeBytes:         flag.Int64("agent-drill-minimum-free-bytes", envInt64("BACKUP_AGENT_DRILL_MINIMUM_FREE_BYTES", 0), "minimum free bytes in drill recovery domain"),
@@ -168,6 +170,9 @@ func buildAgentRecovery(ctx context.Context, flags agentModeFlags) (agentRecover
 			DrillValidatorBinary: *flags.drillValidatorBinary, DrillValidatorAllowedBinaries: splitNonEmpty(*flags.drillValidatorAllowedBinaries), DrillValidatorTimeout: *flags.drillValidatorTimeout,
 		})
 	case "docker":
+		if *flags.drillMinimumFreeBytes < 0 {
+			return nil, errors.New("Agent drill minimum free bytes cannot be negative")
+		}
 		dockerSocket := *flags.dockerSocket
 		if *flags.dockerEndpoint != "" {
 			dockerSocket = ""
@@ -180,6 +185,10 @@ func buildAgentRecovery(ctx context.Context, flags agentModeFlags) (agentRecover
 			PGBackRestBinary: *flags.pgbackrestBinary, PGBackRestConfig: *flags.pgbackrestConfig, Stanza: *flags.stanza,
 			RepositoryID: *flags.repositoryID, RepositoryPath: *flags.repositoryPath, DatabaseHistory: *flags.databaseHistory,
 			FenceCommand: *flags.fenceCommand, RollbackWindow: *flags.rollbackWindow,
+			DrillEnabled: *flags.drillEnabled, DrillRepositoryReadOnly: *flags.drillRepositoryReadOnly,
+			DrillStatePath: *flags.drillStatePath, DrillWorkspaceRoot: *flags.drillWorkspaceRoot, DrillPGBackRestConfig: *flags.drillPGBackRestConfig,
+			DrillAllowedRoots: splitNonEmpty(*flags.drillAllowedRoots), DrillMinimumFreeBytes: uint64(*flags.drillMinimumFreeBytes),
+			DrillValidatorBinary: *flags.drillValidatorBinary, DrillValidatorAllowedBinaries: splitNonEmpty(*flags.drillValidatorAllowedBinaries), DrillValidatorTimeout: *flags.drillValidatorTimeout,
 		})
 	default:
 		return nil, fmt.Errorf("unsupported Agent runtime %q", *flags.runtimeKind)

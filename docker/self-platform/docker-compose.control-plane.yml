@@ -218,6 +218,11 @@ services:
       BACKUP_OPERATOR_AGENT_GRPC_KEY: /run/backup-operator/tls/server.key
       BACKUP_OPERATOR_AGENT_GRPC_CLIENT_CA: /run/backup-operator/tls/ca.crt
       BACKUP_OPERATOR_CLUSTER_DIR: /run/backup-operator/clusters
+      # Daily isolated restore drills on registered clusters. Enable once at
+      # least one cluster is registered.
+      BACKUP_OPERATOR_RESTORE_DRILL_ENABLED: ${BACKUP_OPERATOR_RESTORE_DRILL_ENABLED:-false}
+      BACKUP_OPERATOR_RESTORE_DRILL_INTERVAL: ${BACKUP_OPERATOR_RESTORE_DRILL_INTERVAL:-24h}
+      BACKUP_OPERATOR_RESTORE_DRILL_TARGET_LAG: ${BACKUP_OPERATOR_RESTORE_DRILL_TARGET_LAG:-15m}
     volumes:
       - backup-operator-config:/run/backup-operator:ro
     ports:

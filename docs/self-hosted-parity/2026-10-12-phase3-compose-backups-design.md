@@ -2,7 +2,7 @@
 
 - Date: 2026-10-12
 - Branch: `custom/main`
-- Status: approved 2026-10-12 (option B). Stages 3.1 to 3.3 are done; see section 9.
+- Status: approved 2026-10-12 (option B). Stages 3.1 to 3.4 are done; see section 9.
 - Inputs: Phase 3 of the [completion roadmap](./2026-09-28-fleet-completion-roadmap.md), the [Go Backup Operator architecture](./2026-07-12-go-backup-operator-architecture.md), `apps/backup-operator/docs/production-runbook.md`, and a code audit of `apps/backup-operator` and `docker/fleet-managed` on 2026-10-12.
 
 ## 1. Goal
@@ -121,7 +121,7 @@ Rollback before backups are enabled: run the same service with `MIGRATE_DIRECTIO
 2. **Cluster registrations.** `BACKUP_OPERATOR_CLUSTER_DIR` holds one 0600 JSON file per cluster with its project, target, node, Agent ID, certificate fingerprint, system identifier, data domain, stanza, pgBackRest paths, and repository identity. At startup the Operator enrolls each Agent, registers the repository and the cluster, and routes backups, PITR, maintenance, and restores for it. Duplicate targets, nodes, Agents, or stanzas are refused. A new registration takes effect when the Operator is recreated, which `enable-backups.sh` does. A copy step (`backup-operator-config-init`) delivers the files and the server certificate to the Operator user; the CA key stays on the host.
 3. **Observation task.** `single-primary-pgbackrest.maintenance.observe` runs on the Agent and returns typed evidence: the system identifier, timeline, recovery state, archive settings and archiver health, `pgbackrest info` JSON, the WAL segments listed with `pgbackrest repo-ls`, and the free bytes next to PGDATA. A coordinator requests it every 5 minutes per cluster (skipping clusters with one already queued) and prunes finished observation jobs after 24 hours, keeping the newest. Discovery, PITR status, and recoverability use evidence up to 15 minutes old. Restore planning needs evidence under 2 minutes old and requests a new observation, waiting up to 30 seconds. Recoverability also requests one when the newest backup finished after the latest observation. Freshness is measured from when the Operator received the evidence, not the Agent's clock.
 4. **Quarantine cleanup.** The quarantine records live in the Agent's own recovery store, next to the data, so the Agent cleans them itself: a worker deletes quarantined PGDATA whose rollback window has ended (never the live PGDATA) and records the result. No Operator task is needed.
-5. **Docker restore drill.** Implement `RestoreDrill` for the Docker runtime by reusing the systemd drill runner: restore into the drill workspace and run the validation harness inside the Agent container.
+5. **Docker restore drill.** The Docker runtime reuses the systemd drill runner: restore into the drill workspace and run the validation harness inside the Agent container. The harness, `drill-validator`, starts the restored PGDATA with no TCP listener, archiving off, and read-only transactions; waits for recovery to finish; checks the system identifier; reads every database that accepts connections; and checks that the last replayed transaction is not after the target. Drills restore with a separate `drill.conf` whose repository user can only read the bucket, and recover along the database's current timeline. The Operator schedules them for registered clusters when `BACKUP_OPERATOR_RESTORE_DRILL_ENABLED` is set.
 
 ### 4.7 Drill workspace
 
@@ -247,3 +247,12 @@ Defects found and fixed during the live run:
 - The validation instance ran with archiving off, so the new timeline's history file never reached the repository and the next restore reused timeline 2, colliding with the first restore's WAL. The abandoned segment was removed from the local repository by hand.
 - Recovery followed the newest timeline in the archive. After a rollback that is an abandoned branch, so recovery now follows the timeline the database was on when the restore was planned (`--target-timeline`).
 - Restore planning could reuse an observation taken before the target time or before the last restore or rollback. Planning now always waits for a new observation, and status views ignore observations older than the last restore or rollback.
+
+### Stage 3.4 (done 2026-10-12)
+
+A scheduled drill on `project-d` restored into a 2 GB `tmpfs` workspace, recovered along timeline 5 to five minutes before the drill, stopped before the first transaction after the target, and promoted to a timeline it never archived. The validator read all eight databases. The workspace was removed afterwards, and the project's recovery confidence became `drill-verified`. The drill user's write to the bucket was refused with `AccessDenied`.
+
+Notes:
+
+- A restored PGDATA carries the `ALTER SYSTEM` settings of its backup. `archive_timeout` was set after the backup used here, so it is missing after a restore until `enable-backups.sh` runs again. Settings the stack needs should be applied after a restore, not only at enable time; this belongs with the Studio acceptance in stage 3.5.
+- Validator logs (`<workspace>.log`, `<workspace>.postgres.log`) stay in the workspace root after each drill for diagnosis.

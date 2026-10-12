@@ -62,9 +62,10 @@ func (s ServerObservationTargets) DueTargets(ctx context.Context, now time.Time)
 			return nil, errors.New("server-observed repository identity is incomplete")
 		}
 		nodeID := ""
+		var timeline uint32
 		for _, node := range request.Topology.Nodes {
 			if string(node.Role) == "primary" {
-				nodeID = node.NodeID
+				nodeID, timeline = node.NodeID, uint32(node.Timeline)
 				break
 			}
 		}
@@ -78,7 +79,7 @@ func (s ServerObservationTargets) DueTargets(ctx context.Context, now time.Time)
 			Label: candidate.Label, StartedAt: candidate.StartedAt.UTC(), CompletedAt: candidate.StoppedAt.UTC(),
 			DatabaseSystemID: systemID, DatabaseHistoryID: historyID, RepositoryIdentity: repo,
 		}}
-		targets = append(targets, Target{ProjectID: request.Target.ProjectID, ClusterID: clusterID, NodeID: nodeID, TargetTime: targetTime, Observation: observation})
+		targets = append(targets, Target{ProjectID: request.Target.ProjectID, ClusterID: clusterID, NodeID: nodeID, TargetTime: targetTime, Timeline: timeline, Observation: observation})
 	}
 	return targets, nil
 }

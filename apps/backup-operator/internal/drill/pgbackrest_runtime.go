@@ -50,7 +50,7 @@ func (r PGBackRestRuntime) RestoreIsolated(ctx context.Context, target Target) (
 		return Evidence{}, fmt.Errorf("prepare isolated restore workspace: %w", err)
 	}
 	recoveryTarget := target.TargetTime.UTC()
-	if err := r.Client.RunRestore(ctx, r.Stanza, pgbackrest.RestoreOptions{PGData: path, TargetTime: &recoveryTarget, TargetAction: "promote"}); err != nil {
+	if err := r.Client.RunRestore(ctx, r.Stanza, pgbackrest.RestoreOptions{PGData: path, TargetTime: &recoveryTarget, TargetAction: "promote", TargetTimeline: target.Timeline}); err != nil {
 		return Evidence{}, fmt.Errorf("restore isolated pgBackRest target: %w", err)
 	}
 	checks, err := r.Validator.ValidateIsolated(ctx, path, target)

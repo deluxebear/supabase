@@ -13,10 +13,13 @@ import (
 )
 
 type Target struct {
-	ClusterID   string
-	ProjectID   string
-	NodeID      string
-	TargetTime  time.Time
+	ClusterID  string
+	ProjectID  string
+	NodeID     string
+	TargetTime time.Time
+	// Timeline is the database's timeline when the drill was scheduled; the
+	// drill recovers along its history. Zero keeps pgBackRest's default.
+	Timeline    uint32
 	Observation recoverability.Observation
 }
 

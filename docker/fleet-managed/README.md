@@ -374,6 +374,17 @@ original PGDATA stays next to the new one for the rollback window
 back. When the window ends, the Agent deletes the original, and a new restore
 is refused until then. The data volume needs room for both copies.
 
+Restore drills prove that backups restore. With
+`BACKUP_OPERATOR_RESTORE_DRILL_ENABLED=true` on the control plane, the Operator
+asks each Agent once a day to restore to 15 minutes earlier in
+`/var/lib/backup-drill`, check the result in an isolated PostgreSQL, and delete
+it; a passing drill marks the recovery window `drill-verified`. The workspace
+must be on a different filesystem from the data volume. The overlay uses a
+`tmpfs` (`FLEET_BACKUP_DRILL_TMPFS_SIZE`, default `2g`, held in memory); for a
+database larger than that, mount a directory on a separate disk at
+`/var/lib/backup-drill` instead. Drills read the repository as
+`backup-<ref>-ro`, which cannot write to the bucket.
+
 After that, every `docker compose` command for the stack must include
 `-f fleet-managed/docker-compose.backup.yml`, or `db` is recreated with the
 data volume at the old path and does not start. Fleet lifecycle rollouts are

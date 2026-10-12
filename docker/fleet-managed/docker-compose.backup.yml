@@ -44,6 +44,9 @@ services:
       - |
         install -o 100 -g 101 -m 0600 /source/pgbackrest.conf /config/pgbackrest.conf
         install -o 100 -g 101 -m 0644 /source/ca.crt /config/ca.crt
+        if [ -f /source/drill.conf ]; then
+          install -o 100 -g 101 -m 0600 /source/drill.conf /config/drill.conf
+        fi
         chown 100:101 /config /agent-state /agent-tls
         chmod 0750 /config
         chmod 0700 /agent-state /agent-tls
@@ -202,12 +205,27 @@ services:
       BACKUP_FENCE_BACKGROUND_JOBS: ${MANAGED_CONTAINER_PREFIX}-functions
       BACKUP_FENCE_DIRECT_POSTGRES: ${MANAGED_CONTAINER_PREFIX}-rest,${MANAGED_CONTAINER_PREFIX}-meta
       BACKUP_AGENT_ROLLBACK_WINDOW: ${FLEET_BACKUP_ROLLBACK_WINDOW:-1h}
+      # Restore drills restore into /var/lib/backup-drill, which must be a
+      # different filesystem from the data volume: a tmpfs here, or a bind
+      # mount of a separate disk in production (docker-compose override). They
+      # read the repository with read-only credentials (drill.conf).
+      BACKUP_AGENT_DRILL_ENABLED: "true"
+      BACKUP_AGENT_DRILL_REPOSITORY_READ_ONLY: "true"
+      BACKUP_AGENT_DRILL_PGBACKREST_CONFIG: /etc/pgbackrest/drill.conf
+      BACKUP_AGENT_DRILL_WORKSPACE_ROOT: /var/lib/backup-drill
+      BACKUP_AGENT_DRILL_ALLOWED_ROOTS: /var/lib/backup-drill
+      BACKUP_AGENT_DRILL_MINIMUM_FREE_BYTES: ${FLEET_BACKUP_DRILL_MINIMUM_FREE_BYTES:-1073741824}
+      BACKUP_AGENT_DRILL_VALIDATOR_BINARY: /usr/local/bin/drill-validator
+      BACKUP_AGENT_DRILL_VALIDATOR_ALLOWED_BINARIES: /usr/local/bin/drill-validator
+      DRILL_VALIDATOR_USER: supabase_admin
     volumes:
       - managed-db-data:/var/lib/postgresql
       - managed-db-socket:/var/run/postgresql
       - backup-config:/etc/pgbackrest:ro
       - backup-agent-state:/var/lib/backup-agent
       - backup-agent-tls:/run/backup-agent/tls:ro
+    tmpfs:
+      - /var/lib/backup-drill:size=${FLEET_BACKUP_DRILL_TMPFS_SIZE:-2g},uid=100,gid=101,mode=0700
     security_opt: [no-new-privileges:true]
     networks:
       management: {}

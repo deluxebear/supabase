@@ -71,6 +71,9 @@ stanza="$project_ref"
 bucket="fleet-backup-$project_ref"
 repository_user="backup-$project_ref"
 repository_policy="backup-$project_ref-rw"
+# Restore drills read the repository with credentials that cannot write to it.
+drill_user="backup-$project_ref-ro"
+drill_policy="backup-$project_ref-ro"
 config_dir="$root_dir/state/$project_ref/backup"
 config_file="$config_dir/pgbackrest.conf"
 archive_command="$pgbackrest_binary --config=$pgbackrest_config --stanza=$stanza archive-push %p"
@@ -117,6 +120,16 @@ pg1-user=supabase_admin
 EOF
   install -m 0600 "$work/pgbackrest.conf" "$config_file"
 fi
+drill_file="$config_dir/drill.conf"
+if [ -f "$drill_file" ]; then
+  drill_secret="$(envval_from "$drill_file" repo1-s3-key-secret)"
+  [ -n "$drill_secret" ] || fail "$drill_file has no repository secret"
+else
+  drill_secret="$(openssl rand -hex 32)"
+  sed -e "s/^repo1-s3-key=.*/repo1-s3-key=$drill_user/" -e "s/^repo1-s3-key-secret=.*/repo1-s3-key-secret=$drill_secret/" \
+    "$config_file" >"$work/drill.conf"
+  install -m 0600 "$work/drill.conf" "$drill_file"
+fi
 install -m 0644 "$repository_ca" "$config_dir/ca.crt"
 set_project_env() {
   if grep -qE "^$1=" "$project_env"; then
@@ -138,12 +151,16 @@ step "Creating bucket $bucket and its credentials"
   printf 'ROOT_PASSWORD=%s\n' "$(envval_from "$control_env" BACKUP_REPOSITORY_ROOT_PASSWORD)"
   printf 'BUCKET=%s\nUSER_NAME=%s\nUSER_SECRET=%s\nPOLICY=%s\n' \
     "$bucket" "$repository_user" "$repository_secret" "$repository_policy"
+  printf 'RO_USER=%s\nRO_SECRET=%s\nRO_POLICY=%s\n' "$drill_user" "$drill_secret" "$drill_policy"
 } >"$work/rc.env"
 cat >"$work/policy.json" <<EOF
 {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:*"],"Resource":["arn:aws:s3:::$bucket","arn:aws:s3:::$bucket/*"]}]}
 EOF
+cat >"$work/policy-ro.json" <<EOF
+{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:GetObject","s3:ListBucket","s3:GetBucketLocation"],"Resource":["arn:aws:s3:::$bucket","arn:aws:s3:::$bucket/*"]}]}
+EOF
 docker run --rm --network "$management_network" --env-file "$work/rc.env" \
-  -v "$work/policy.json:/policy.json:ro" -v "$repository_ca:/ca.crt:ro" -e SSL_CERT_FILE=/ca.crt \
+  -v "$work/policy.json:/policy.json:ro" -v "$work/policy-ro.json:/policy-ro.json:ro" -v "$repository_ca:/ca.crt:ro" -e SSL_CERT_FILE=/ca.crt \
   --entrypoint /bin/sh "$rc_image" -ceu "
     rc alias set root https://$repository_endpoint:$repository_port \"\$ROOT_USER\" \"\$ROOT_PASSWORD\" >/dev/null
     rc mb --ignore-existing \"root/\$BUCKET\"
@@ -155,6 +172,10 @@ docker run --rm --network "$management_network" --env-file "$work/rc.env" \
     fi
     rc admin policy attach root \"\$POLICY\" --user \"\$USER_NAME\" >/dev/null 2>&1 || true
     rc admin policy entities root --user \"\$USER_NAME\" | grep -q \"\$POLICY\"
+    rc admin policy info root \"\$RO_POLICY\" >/dev/null 2>&1 || rc admin policy create root \"\$RO_POLICY\" /policy-ro.json
+    rc admin user info root \"\$RO_USER\" >/dev/null 2>&1 || rc admin user add root \"\$RO_USER\" \"\$RO_SECRET\"
+    rc admin policy attach root \"\$RO_POLICY\" --user \"\$RO_USER\" >/dev/null 2>&1 || true
+    rc admin policy entities root --user \"\$RO_USER\" | grep -q \"\$RO_POLICY\"
   "
 
 step "Migrating the data volume layout"

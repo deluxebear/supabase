@@ -71,7 +71,8 @@ func (r clusterRegistration) archiveCommand() string {
 }
 
 func (r clusterRegistration) capabilities() []string {
-	capabilities := app.ManagementCapabilities(app.CapabilitySinglePrimary, false)
+	// Agents advertise a subset; drills appear only when the Agent has a workspace.
+	capabilities := app.ManagementCapabilities(app.CapabilitySinglePrimary, true)
 	return append(capabilities, opruntime.ObserveCapability, app.CapabilitySinglePrimary+".restore.execute", app.CapabilitySinglePrimary+".restore.rollback")
 }
 
@@ -168,4 +169,12 @@ func (c *observedClusters) clusters() []opruntime.ObservedCluster {
 		result = append(result, c.sources[target].Cluster)
 	}
 	return result
+}
+
+func registeredMaintenanceCapabilities(drillEnabled bool) map[string]string {
+	capabilities := map[string]string{"repository-check": app.CapabilitySinglePrimary + ".maintenance.repository-check", "expire": app.CapabilitySinglePrimary + ".maintenance.expire"}
+	if drillEnabled {
+		capabilities["restore-drill"] = app.CapabilitySinglePrimary + ".maintenance.restore-drill"
+	}
+	return capabilities
 }

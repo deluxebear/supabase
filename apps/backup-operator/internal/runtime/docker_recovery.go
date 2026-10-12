@@ -16,6 +16,7 @@ import (
 
 	"github.com/supabase/supabase/apps/backup-operator/internal/contracts"
 	"github.com/supabase/supabase/apps/backup-operator/internal/controlstore"
+	"github.com/supabase/supabase/apps/backup-operator/internal/drill"
 	"github.com/supabase/supabase/apps/backup-operator/internal/pgbackrest"
 	"github.com/supabase/supabase/apps/backup-operator/internal/pitr"
 	"github.com/supabase/supabase/apps/backup-operator/internal/recoveryexec"
@@ -41,6 +42,16 @@ type DockerRecoveryConfig struct {
 	RepositoryID, RepositoryPath, DatabaseHistory    string
 	FenceCommand                                     string
 	RollbackWindow                                   time.Duration
+	// Drill settings mirror the systemd runtime. DrillPGBackRestConfig names a
+	// configuration with read-only repository credentials.
+	DrillEnabled, DrillRepositoryReadOnly bool
+	DrillStatePath, DrillWorkspaceRoot    string
+	DrillPGBackRestConfig                 string
+	DrillAllowedRoots                     []string
+	DrillMinimumFreeBytes                 uint64
+	DrillValidatorBinary                  string
+	DrillValidatorAllowedBinaries         []string
+	DrillValidatorTimeout                 time.Duration
 }
 
 type DockerRecovery struct {
@@ -53,6 +64,8 @@ type DockerRecovery struct {
 	docker      *DockerClient
 	client      *pgbackrest.Client
 	pitr        pitr.Workflow
+	drill       drill.Runtime
+	drillStore  drill.Store
 }
 
 func NewDockerRecovery(ctx context.Context, config DockerRecoveryConfig) (*DockerRecovery, error) {
@@ -128,6 +141,15 @@ func newDockerRecovery(ctx context.Context, config DockerRecoveryConfig, client 
 	}
 	recovery := &DockerRecovery{config: config, store: store, coordinator: coordinator, fence: fence, database: database, validation: validation, docker: client, client: pgbackrestClient}
 	recovery.pitr = pitr.Workflow{Store: controlstore.PITRStateStore{Store: store}, Runtime: dockerPITRRuntime{recovery: recovery}}
+	if config.DrillEnabled {
+		drillClient := &pgbackrest.Client{Builder: pgbackrest.Builder{Binary: config.PGBackRestBinary, ConfigPath: config.DrillPGBackRestConfig}, Runner: pgBackRestExecRunner{}, RetryAttempts: 3, RetryDelay: time.Second}
+		recovery.drillStore = &drill.FileStore{Path: config.DrillStatePath}
+		recovery.drill = drill.PGBackRestRuntime{
+			Client: drillClient, Stanza: config.Stanza, WorkspaceRoot: config.DrillWorkspaceRoot, RepositoryReadOnly: config.DrillRepositoryReadOnly,
+			Workspace: drill.RecoveryDomainWorkspace{Root: config.DrillWorkspaceRoot, AllowedRoots: config.DrillAllowedRoots, ProductionDataPath: config.PGData, MinimumFreeBytes: config.DrillMinimumFreeBytes},
+			Validator: drill.CommandValidator{Binary: config.DrillValidatorBinary, AllowedBinaries: config.DrillValidatorAllowedBinaries, Timeout: config.DrillValidatorTimeout},
+		}
+	}
 	return recovery, nil
 }
 
@@ -183,6 +205,22 @@ func (r *DockerRecovery) ObserveCluster(ctx context.Context) (ClusterObservation
 
 func (r *DockerRecovery) RestoreDrill(context.Context, string) error {
 	return errors.New("isolated restore drill runtime is not configured for this Agent")
+}
+
+// RestoreDrillEvidence restores into the drill workspace, validates the result
+// in isolation, and returns the typed drill result.
+func (r *DockerRecovery) RestoreDrillEvidence(ctx context.Context, _ string, target drill.Target) (drill.Result, error) {
+	if r == nil || r.drill == nil || r.drillStore == nil || target.ProjectID != r.config.ProjectID || target.ClusterID != r.config.TargetID || target.NodeID != r.config.NodeID {
+		return drill.Result{}, errors.New("isolated restore drill does not match an enrolled recovery domain")
+	}
+	runner := drill.Runner{Runtime: r.drill, Store: r.drillStore, Targets: oneDrillTarget{target: target}, Interval: time.Hour}
+	runErr := runner.RunOnce(ctx)
+	result, readErr := r.drillStore.Latest(ctx, target.ClusterID)
+	return result, errors.Join(runErr, readErr)
+}
+
+func (r *DockerRecovery) DrillConfigured() bool {
+	return r != nil && r.drill != nil && r.drillStore != nil
 }
 
 type dockerPITRRuntime struct{ recovery *DockerRecovery }
@@ -466,6 +504,16 @@ func validateDockerRecoveryConfig(c DockerRecoveryConfig) error {
 	}
 	if c.RollbackWindow <= 0 {
 		return errors.New("positive rollback window is required")
+	}
+	if c.DrillEnabled {
+		for _, value := range []string{c.DrillStatePath, c.DrillWorkspaceRoot, c.DrillValidatorBinary, c.DrillPGBackRestConfig} {
+			if !filepath.IsAbs(value) || filepath.Clean(value) != value {
+				return errors.New("drill state, workspace, validator, and pgBackRest config paths must be absolute and clean")
+			}
+		}
+		if !c.DrillRepositoryReadOnly || c.DrillMinimumFreeBytes == 0 || c.DrillValidatorTimeout <= 0 || len(c.DrillAllowedRoots) == 0 || len(c.DrillValidatorAllowedBinaries) == 0 {
+			return errors.New("drill requires read-only repository access, allowlists, capacity, and validator timeout")
+		}
 	}
 	return nil
 }
